@@ -1,6 +1,7 @@
 from django.urls import path
 
+from roadmap.views import RoadMapAPI
+
 urlpatterns = [
-    # 회원가입
-    # path("", RegisterView.as_view(), name='rest_register'),
+    path("", RoadMapAPI.as_view()),
 ]
