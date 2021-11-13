@@ -1,3 +1,9 @@
 from django.contrib import admin
 
-# Register your models here.
+from roadmap.models import RoadMap, BaseNode, UserNode
+
+admin.site.register(RoadMap)
+admin.site.register(BaseNode)
+admin.site.register(UserNode)
+
+
