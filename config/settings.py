@@ -41,6 +41,7 @@ THIRD_APPS = [
 
 PROJECT_APPS = [
     'accounts',
+    'roadmap',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + PROJECT_APPS + THIRD_APPS
