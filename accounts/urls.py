@@ -20,7 +20,7 @@ urlpatterns = [
     # 비밀번호 찾기
     # # 이메일 전송 가능하게 해야함
     # path('password-reset', PasswordResetView.as_view(), name='rest_password_reset'),
-    # # url에 uidb64 위치와 token 위치에 있는 것을 POST에 같이 넘기면 됨
+    # # url uidb64 위치와 token 위치에 있는 것을 POST 같이 넘기면 됨
     # path('password-reset-confirm/<uidb64>/<token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
 
     # 이메일 인증하기

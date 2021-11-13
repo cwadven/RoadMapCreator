@@ -6,6 +6,7 @@ from rest_auth.registration.serializers import RegisterSerializer
 from rest_framework.validators import UniqueValidator
 from .validators import NewASCIIUsernameValidator
 
+
 class ProfileSerializer(RegisterSerializer):
     username = serializers.CharField(
         required=True,
@@ -19,7 +20,7 @@ class ProfileSerializer(RegisterSerializer):
 
     class Meta:
         model = Profile
-    
+
     def get_cleaned_data(self):
         data_dict = super().get_cleaned_data()
         # 추가적인 속성이 들어갈 경우
@@ -32,7 +33,7 @@ class ProfileSerializer(RegisterSerializer):
 # class UsernameEmailAddress(serializers.ModelSerializer):
 #     username = serializers.CharField(required=True, min_length=5, max_length=20)
 #     email = serializers.EmailField(required=True)
-    
+
 #     class Meta:
 #         model = Profile
 #         fields = ("username", "email")
