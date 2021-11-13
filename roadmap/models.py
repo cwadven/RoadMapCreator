@@ -31,6 +31,9 @@ class BaseNode(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return self.name
+
 
 class UserNode(models.Model):
     account = models.ForeignKey(Profile, on_delete=models.CASCADE)
