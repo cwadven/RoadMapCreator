@@ -1,6 +1,7 @@
 from django.db import transaction
 from django.db.models import F, Prefetch
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -11,6 +12,8 @@ from roadmap.serializers import RoadMapListSerializer, RoadMapDetailSerializer
 
 
 class RoadMapAPI(APIView):
+    permission_classes = (IsAuthenticatedOrReadOnly, )
+
     def get(self, request):
         roadmap_set = RoadMap.objects.select_related(
             'account'
@@ -21,9 +24,6 @@ class RoadMapAPI(APIView):
         )
 
     def post(self, request):
-        if not request.user.is_authenticated:
-            return Response(data={"error": MSG_LOGIN_REQUIRED}, status=status.HTTP_400_BAD_REQUEST)
-
         title = mandatory_key(request, "title")
         description = optional_key(request, "description")
         image = request.FILES.get("image")
@@ -39,6 +39,8 @@ class RoadMapAPI(APIView):
 
 
 class RoadMapDetailAPI(APIView):
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+
     def get(self, request, id):
         try:
             roadmap = RoadMap.objects.prefetch_related(
@@ -52,14 +54,11 @@ class RoadMapDetailAPI(APIView):
                 id=id
             )
         except RoadMap.DoesNotExist as e:
-            return Response(data={"error": e}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data={"detail": e}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(data={"success": RoadMapDetailSerializer(roadmap).data}, status=status.HTTP_200_OK)
 
     def put(self, request, id):
-        if not request.user.is_authenticated:
-            return Response(data={"error": MSG_LOGIN_REQUIRED}, status=status.HTTP_400_BAD_REQUEST)
-
         try:
             roadmap = RoadMap.objects.prefetch_related(
                 Prefetch(
@@ -73,7 +72,7 @@ class RoadMapDetailAPI(APIView):
             )
 
             if request.user != roadmap.account:
-                return Response(data={"error": MSG_UNAUTHORIZED}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(data={"detail": MSG_UNAUTHORIZED}, status=status.HTTP_401_UNAUTHORIZED)
 
             update_fields = ["updated_at"]
 
@@ -97,4 +96,4 @@ class RoadMapDetailAPI(APIView):
             return Response(data={"success": RoadMapDetailSerializer(roadmap).data}, status=status.HTTP_200_OK)
 
         except RoadMap.DoesNotExist as e:
-            return Response(data={"error": e}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data={"detail": e}, status=status.HTTP_400_BAD_REQUEST)
