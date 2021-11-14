@@ -13,7 +13,7 @@ from roadmap.serializers import RoadMapListSerializer, RoadMapDetailSerializer, 
 
 # RoadMap 관련
 class RoadMapAPI(APIView):
-    permission_classes = (IsAuthenticatedOrReadOnly, )
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def get(self, request):
         roadmap_set = RoadMap.objects.select_related(
@@ -102,7 +102,7 @@ class RoadMapDetailAPI(APIView):
 
 # BaseNode 관련
 class BaseNodeAPI(APIView):
-    permission_classes = (IsAuthenticatedOrReadOnly, )
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def post(self, request, roadmap_id):
         try:
@@ -115,8 +115,8 @@ class BaseNodeAPI(APIView):
 
         name = mandatory_key(request, "name")
         description = optional_key(request, "description")
-        difficulty = int(mandatory_key(request, "difficulty"))
-        display_level = int(mandatory_key(request, "display_level"))
+        difficulty = mandatory_key(request, "difficulty")
+        display_level = mandatory_key(request, "display_level")
         hex_color_code = optional_key(request, "hex_color_code")
         image = request.FILES.get("image")
 
@@ -126,10 +126,57 @@ class BaseNodeAPI(APIView):
                 roadmap=roadmap,
                 name=name,
                 description=description,
-                difficulty=difficulty,
-                display_level=display_level,
+                difficulty=int(difficulty),
+                display_level=int(display_level),
                 hex_color_code=hex_color_code,
                 image=image,
             )
+
+        return Response(data={"success": BaseNodeDetailSerializer(basenode).data}, status=status.HTTP_200_OK)
+
+
+class BaseNodeDetailAPI(APIView):
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+
+    def put(self, request, basenode_id):
+        try:
+            basenode = BaseNode.objects.get(id=basenode_id)
+        except BaseNode.DoesNotExist as e:
+            return Response(data={"detail": e}, status=status.HTTP_400_BAD_REQUEST)
+
+        if basenode.account != request.user:
+            return Response(data={"detail": MSG_UNAUTHORIZED}, status=status.HTTP_401_UNAUTHORIZED)
+
+        update_fields = ["updated_at"]
+
+        # 수정하기
+        name = optional_key(request, "name")
+        description = optional_key(request, "description")
+        difficulty = optional_key(request, "difficulty")
+        display_level = optional_key(request, "display_level")
+        hex_color_code = optional_key(request, "hex_color_code")
+        image = request.FILES.get("image")
+
+        with transaction.atomic():
+            if name:
+                basenode.name = name
+                update_fields.append("name")
+            if description:
+                basenode.description = description
+                update_fields.append("description")
+            if difficulty:
+                basenode.difficulty = int(difficulty)
+                update_fields.append("difficulty")
+            if display_level:
+                basenode.display_level = int(display_level)
+                update_fields.append("display_level")
+            if hex_color_code:
+                basenode.hex_color_code = hex_color_code
+                update_fields.append("hex_color_code")
+            if image:
+                basenode.image = image
+                update_fields.append("image")
+
+            basenode.save(update_fields=update_fields)
 
         return Response(data={"success": BaseNodeDetailSerializer(basenode).data}, status=status.HTTP_200_OK)
