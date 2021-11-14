@@ -284,6 +284,7 @@ class ShortestDirectionAPI(APIView):
             pre_data[data]["predecessor"] = None
             pre_data[data]["complete"] = False
 
+        # 다익스트라 준비
         next_node = pre_data[start_basenode_id]
         next_node["distance"] = 0
 
@@ -296,7 +297,6 @@ class ShortestDirectionAPI(APIView):
 
             next_node["complete"] = True
 
-            # True 인 것 제외 시키기
             not_completed_node_set = list(filter(lambda id: not pre_data[id]["complete"], connected_node_set))
 
             if not_completed_node_set:
@@ -305,7 +305,7 @@ class ShortestDirectionAPI(APIView):
             else:
                 next_node = None
 
-        # 백트레킹 하기
+        # 완료 후, 백트레킹 하기
         destination_node = pre_data[end_basenode_id]["predecessor"]
 
         shortest_path = f'{pre_data[end_basenode_id]["id"]}'
@@ -318,17 +318,21 @@ class ShortestDirectionAPI(APIView):
 
         # 결과
         basenode_degree_filter_set = list(zip(route[1:], route))
-        q = Q()
 
+        q = Q()
         for basenode_degree_filter in basenode_degree_filter_set:
             q = q | Q(from_basenode_id=basenode_degree_filter[0], to_basenode_id=basenode_degree_filter[1])
 
-        basenode_degree_shortest_path_set = BaseNodeDegree.objects.filter(q).values_list('id', flat=True)
+        basenode_degree_shortest_connection_set = BaseNodeDegree.objects.filter(q).values(
+            "id",
+            "weight"
+        )
 
         return Response(data={
             "success": {
-                "basenode_degree_shortest_connection_id": basenode_degree_shortest_path_set,
-                "path_direction": f'도착지 [{pre_data[end_basenode_id]["id"]}] -> {shortest_path} : {pre_data[end_basenode_id]["distance"]} (shortest_distance)'
+                "basenode_degree_shortest_connection_set": basenode_degree_shortest_connection_set,
+                "path_direction": f'출발지 [{pre_data[start_basenode_id]["id"]}], 도착지 [{pre_data[end_basenode_id]["id"]}] {shortest_path}',
+                "total_weight": pre_data[end_basenode_id]["distance"],
             }
         }, status=status.HTTP_200_OK)
 
