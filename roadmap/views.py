@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 
 from STATUS_MSG import MSG_UNAUTHORIZED, MSG_LOGIN_REQUIRED
 from common_library import mandatory_key, optional_key
-from roadmap.models import RoadMap, BaseNode
+from roadmap.models import RoadMap, BaseNode, BaseNodeDegree
 from roadmap.serializers import RoadMapListSerializer, RoadMapDetailSerializer, BaseNodeDetailSerializer
 
 
@@ -55,7 +55,7 @@ class RoadMapDetailAPI(APIView):
                 id=id
             )
         except RoadMap.DoesNotExist as e:
-            return Response(data={"detail": e}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data={"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(data={"success": RoadMapDetailSerializer(roadmap).data}, status=status.HTTP_200_OK)
 
@@ -97,7 +97,7 @@ class RoadMapDetailAPI(APIView):
             return Response(data={"success": RoadMapDetailSerializer(roadmap).data}, status=status.HTTP_200_OK)
 
         except RoadMap.DoesNotExist as e:
-            return Response(data={"detail": e}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data={"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # BaseNode 관련
@@ -108,7 +108,7 @@ class BaseNodeAPI(APIView):
         try:
             roadmap = RoadMap.objects.get(id=roadmap_id)
         except RoadMap.DoesNot as e:
-            return Response(data={"detail": e}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data={"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         if roadmap.account != request.user:
             return Response(data={"detail": MSG_UNAUTHORIZED}, status=status.HTTP_401_UNAUTHORIZED)
@@ -142,7 +142,7 @@ class BaseNodeDetailAPI(APIView):
         try:
             basenode = BaseNode.objects.get(id=basenode_id)
         except BaseNode.DoesNotExist as e:
-            return Response(data={"detail": e}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data={"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         if basenode.account != request.user:
             return Response(data={"detail": MSG_UNAUTHORIZED}, status=status.HTTP_401_UNAUTHORIZED)
@@ -180,3 +180,56 @@ class BaseNodeDetailAPI(APIView):
             basenode.save(update_fields=update_fields)
 
         return Response(data={"success": BaseNodeDetailSerializer(basenode).data}, status=status.HTTP_200_OK)
+
+
+class BaseNodeDegreeAPI(APIView):
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+
+    def post(self, request):
+        from_basenode_id = mandatory_key(request, "from_basenode_id")
+        to_basenode_id = mandatory_key(request, "to_basenode_id")
+        weight = mandatory_key(request, "weight")
+
+        try:
+            from_basenode = BaseNode.objects.get(id=from_basenode_id)
+            to_basenode = BaseNode.objects.get(id=to_basenode_id)
+        except BaseNode.DoesNotExist as e:
+            return Response(data={"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        if from_basenode.account != request.user and to_basenode.account != request.user:
+            return Response(data={"detail": MSG_UNAUTHORIZED}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            basenode_degree = BaseNodeDegree.objects.update_or_create(
+                from_basenode=from_basenode,
+                to_basenode=to_basenode,
+                defaults={"weight": weight}
+            )
+        except Exception as e:
+            return Response(data={"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(data={"success": BaseNodeDetailSerializer(from_basenode).data}, status=status.HTTP_200_OK)
+
+    def delete(self, request):
+        from_basenode_id = mandatory_key(request, "from_basenode_id")
+        to_basenode_id = mandatory_key(request, "to_basenode_id")
+
+        try:
+            from_basenode = BaseNode.objects.get(id=from_basenode_id)
+            to_basenode = BaseNode.objects.get(id=to_basenode_id)
+        except BaseNode.DoesNotExist as e:
+            return Response(data={"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        if from_basenode.account != request.user and to_basenode.account != request.user:
+            return Response(data={"detail": MSG_UNAUTHORIZED}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            basenode_degree = BaseNodeDegree.objects.get(
+                from_basenode=from_basenode,
+                to_basenode=to_basenode,
+            )
+            basenode_degree.delete()
+        except Exception as e:
+            return Response(data={"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(data={"success": BaseNodeDetailSerializer(from_basenode).data}, status=status.HTTP_200_OK)
