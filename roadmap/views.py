@@ -1,11 +1,13 @@
+from collections import deque
+
 from django.db import transaction
-from django.db.models import F, Prefetch
+from django.db.models import F, Prefetch, Q
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from STATUS_MSG import MSG_UNAUTHORIZED, MSG_DIFFERENT_ROADMAP
+from STATUS_MSG import MSG_UNAUTHORIZED, MSG_DIFFERENT_ROADMAP, MSG_NOT_CONNECTED
 from common_library import mandatory_key, optional_key
 from roadmap.models import RoadMap, BaseNode, BaseNodeDegree
 from roadmap.serializers import RoadMapListSerializer, RoadMapDetailSerializer, BaseNodeDetailSerializer
@@ -182,6 +184,7 @@ class BaseNodeDetailAPI(APIView):
         return Response(data={"success": BaseNodeDetailSerializer(basenode).data}, status=status.HTTP_200_OK)
 
 
+# BaseNodeDegree 관련
 class BaseNodeDegreeAPI(APIView):
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
@@ -236,3 +239,118 @@ class BaseNodeDegreeAPI(APIView):
             return Response(data={"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(data={"success": BaseNodeDetailSerializer(from_basenode).data}, status=status.HTTP_200_OK)
+
+
+# 최적의 경로 구하기
+class ShortestDirectionAPI(APIView):
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+
+    def get(self, request, id):
+        start_basenode_id = int(mandatory_key(request, "start_basenode_id"))
+        end_basenode_id = int(mandatory_key(request, "end_basenode_id"))
+
+        try:
+            roadmap = RoadMap.objects.prefetch_related(
+                Prefetch(
+                    "basenode_set",
+                    queryset=BaseNode.objects.prefetch_related("degree_from").all()
+                ),
+            ).annotate(
+                username=F("account__username"),
+            ).get(
+                id=id
+            )
+        except RoadMap.DoesNotExist as e:
+            return Response(data={"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        roadmap_basenode_set = RoadMapDetailSerializer(roadmap).data["basenode_set"]
+
+        # start_basenode_id 와 end_basenode_id 가 RoadMap 안에 없을 경우 예외처리
+        roadmap_basenode_id_set = set(map(lambda basenode: basenode['id'], roadmap_basenode_set))
+        if {start_basenode_id, end_basenode_id} - roadmap_basenode_id_set:
+            return Response(data={"detail": MSG_DIFFERENT_ROADMAP}, status=status.HTTP_400_BAD_REQUEST)
+
+        # start_basenode_id, end_basenode_id 연결여부 확인
+        connected_node_set = self.connected_basenode_set(start_basenode_id, roadmap_basenode_set)
+
+        if not (end_basenode_id in connected_node_set):
+            return Response(data={"detail": MSG_NOT_CONNECTED}, status=status.HTTP_200_OK)
+
+        # 값 가공
+        pre_data = {roadmap_basenode["id"]: roadmap_basenode for roadmap_basenode in roadmap_basenode_set}
+
+        for data in pre_data:
+            pre_data[data]["distance"] = float("inf")
+            pre_data[data]["predecessor"] = None
+            pre_data[data]["complete"] = False
+
+        next_node = pre_data[start_basenode_id]
+        next_node["distance"] = 0
+
+        while next_node:
+            for edge in next_node["degree_set"]:
+                if not pre_data[edge["to_basenode_id"]]["complete"]:
+                    if pre_data[edge["to_basenode_id"]]["distance"] > next_node["distance"] + edge["weight"]:
+                        pre_data[edge["to_basenode_id"]]["distance"] = next_node["distance"] + edge["weight"]
+                        pre_data[edge["to_basenode_id"]]["predecessor"] = next_node
+
+            next_node["complete"] = True
+
+            # True 인 것 제외 시키기
+            not_completed_node_set = list(filter(lambda id: not pre_data[id]["complete"], connected_node_set))
+
+            if not_completed_node_set:
+                not_completed_node_set.sort(key=lambda id: pre_data[id]["distance"])
+                next_node = pre_data[not_completed_node_set[0]]
+            else:
+                next_node = None
+
+        # 백트레킹 하기
+        destination_node = pre_data[end_basenode_id]["predecessor"]
+
+        shortest_path = f'{pre_data[end_basenode_id]["id"]}'
+        route = [pre_data[end_basenode_id]["id"]]
+
+        while destination_node:
+            route.append(destination_node["id"])
+            shortest_path = f'{destination_node["id"]} - {shortest_path}'
+            destination_node = destination_node["predecessor"]
+
+        # 결과
+        basenode_degree_filter_set = list(zip(route[1:], route))
+        q = Q()
+
+        for basenode_degree_filter in basenode_degree_filter_set:
+            q = q | Q(from_basenode_id=basenode_degree_filter[0], to_basenode_id=basenode_degree_filter[1])
+
+        basenode_degree_shortest_path_set = BaseNodeDegree.objects.filter(q).values_list('id', flat=True)
+
+        return Response(data={
+            "success": {
+                "basenode_degree_shortest_connection_id": basenode_degree_shortest_path_set,
+                "path_direction": f'도착지 [{pre_data[end_basenode_id]["id"]}] -> {shortest_path} : {pre_data[end_basenode_id]["distance"]} (shortest_distance)'
+            }
+        }, status=status.HTTP_200_OK)
+
+    @staticmethod
+    def connected_basenode_set(start_basenode_id, roadmap_basenode_set):
+        pre_data = {roadmap_basenode["id"]: roadmap_basenode for roadmap_basenode in roadmap_basenode_set}
+
+        queue = deque()
+        completed_basenode = []
+        connection_nodes = []
+
+        queue.append(pre_data[start_basenode_id])
+        completed_basenode.append(start_basenode_id)
+
+        while queue:
+            current_node = queue.popleft()
+
+            for connection in current_node.get("degree_set"):
+                if not connection.get("to_basenode_id") in completed_basenode:
+                    queue.append(pre_data[connection["to_basenode_id"]])
+                    completed_basenode.append(connection["to_basenode_id"])
+
+            connection_nodes.append(current_node)
+
+        return completed_basenode
