@@ -51,3 +51,6 @@ class BaseNodeDegree(models.Model):
 
     def __str__(self):
         return f"{self.from_basenode} -> {self.to_basenode}"
+
+    class Meta:
+        unique_together = ('from_basenode', 'to_basenode',)
