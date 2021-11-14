@@ -8,9 +8,10 @@ from rest_framework.views import APIView
 from STATUS_MSG import MSG_UNAUTHORIZED, MSG_LOGIN_REQUIRED
 from common_library import mandatory_key, optional_key
 from roadmap.models import RoadMap, BaseNode
-from roadmap.serializers import RoadMapListSerializer, RoadMapDetailSerializer
+from roadmap.serializers import RoadMapListSerializer, RoadMapDetailSerializer, BaseNodeDetailSerializer
 
 
+# RoadMap 관련
 class RoadMapAPI(APIView):
     permission_classes = (IsAuthenticatedOrReadOnly, )
 
@@ -97,3 +98,38 @@ class RoadMapDetailAPI(APIView):
 
         except RoadMap.DoesNotExist as e:
             return Response(data={"detail": e}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# BaseNode 관련
+class BaseNodeAPI(APIView):
+    permission_classes = (IsAuthenticatedOrReadOnly, )
+
+    def post(self, request, roadmap_id):
+        try:
+            roadmap = RoadMap.objects.get(id=roadmap_id)
+        except RoadMap.DoesNot as e:
+            return Response(data={"detail": e}, status=status.HTTP_400_BAD_REQUEST)
+
+        if roadmap.account != request.user:
+            return Response(data={"detail": MSG_UNAUTHORIZED}, status=status.HTTP_401_UNAUTHORIZED)
+
+        name = mandatory_key(request, "name")
+        description = optional_key(request, "description")
+        difficulty = int(mandatory_key(request, "difficulty"))
+        display_level = int(mandatory_key(request, "display_level"))
+        hex_color_code = optional_key(request, "hex_color_code")
+        image = request.FILES.get("image")
+
+        with transaction.atomic():
+            basenode = BaseNode.objects.create(
+                account=request.user,
+                roadmap=roadmap,
+                name=name,
+                description=description,
+                difficulty=difficulty,
+                display_level=display_level,
+                hex_color_code=hex_color_code,
+                image=image,
+            )
+
+        return Response(data={"success": BaseNodeDetailSerializer(basenode).data}, status=status.HTTP_200_OK)
