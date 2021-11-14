@@ -8,15 +8,15 @@ def mandatory_key(request, name):
         else:
             data = request.POST[name]
         if data == '':
-            raise APIException(f"missing mandatory key {name}")
+            raise APIException(f"missing mandatory key '{name}'")
     except:
         try:
             json_body = request.data
             data = json_body[name]
             if data == "":
-                raise APIException(f"missing mandatory key {name}")
+                raise APIException(f"missing mandatory key '{name}'")
         except:
-            raise APIException(f"missing mandatory key {name}")
+            raise APIException(f"missing mandatory key '{name}'")
 
     return data
 
