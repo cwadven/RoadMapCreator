@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from STATUS_MSG import MSG_UNAUTHORIZED, MSG_LOGIN_REQUIRED
+from STATUS_MSG import MSG_UNAUTHORIZED, MSG_DIFFERENT_ROADMAP
 from common_library import mandatory_key, optional_key
 from roadmap.models import RoadMap, BaseNode, BaseNodeDegree
 from roadmap.serializers import RoadMapListSerializer, RoadMapDetailSerializer, BaseNodeDetailSerializer
@@ -198,6 +198,9 @@ class BaseNodeDegreeAPI(APIView):
 
         if from_basenode.account != request.user and to_basenode.account != request.user:
             return Response(data={"detail": MSG_UNAUTHORIZED}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if from_basenode.roadmap != to_basenode.roadmap:
+            return Response(data={"detail": MSG_DIFFERENT_ROADMAP}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             basenode_degree = BaseNodeDegree.objects.update_or_create(
