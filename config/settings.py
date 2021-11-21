@@ -38,6 +38,8 @@ THIRD_APPS = [
     'django.contrib.sites',
     'rest_auth.registration',
 
+    'corsheaders',
+
     # django toolbar
     'debug_toolbar',
 ]
@@ -45,6 +47,7 @@ THIRD_APPS = [
 PROJECT_APPS = [
     'accounts',
     'roadmap',
+    'web',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + PROJECT_APPS + THIRD_APPS
@@ -105,6 +108,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -187,3 +191,7 @@ MEDIA_URL = '/media/'
 INTERNAL_IPS = [
     '127.0.0.1',
 ]
+
+CORS_ORIGIN_ALLOW_ALL = True
+
+CORS_ALLOW_CREDENTIALS = True
