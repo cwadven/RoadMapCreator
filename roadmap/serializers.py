@@ -8,6 +8,7 @@ class BaseNodeDegreeDetailSerializer(serializers.ModelSerializer):
         model = BaseNodeDegree
         fields = [
             "id",
+            "from_basenode_id",
             "to_basenode_id",
             "weight"
         ]
