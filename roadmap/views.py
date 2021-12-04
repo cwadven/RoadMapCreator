@@ -56,10 +56,19 @@ class RoadMapDetailAPI(APIView):
             ).get(
                 id=id
             )
+            basenode_degree_set = BaseNodeDegree.objects.select_related(
+                'to_basenode__roadmap',
+                'from_basenode__roadmap',
+            ).filter(from_basenode__roadmap=roadmap)
         except RoadMap.DoesNotExist as e:
             return Response(data={"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(data={"success": RoadMapDetailSerializer(roadmap).data}, status=status.HTTP_200_OK)
+        content = {
+            "roadmap": RoadMapDetailSerializer(roadmap).data,
+            "degree_set": basenode_degree_set.values()
+        }
+
+        return Response(data={"success": content}, status=status.HTTP_200_OK)
 
     def put(self, request, id):
         try:
