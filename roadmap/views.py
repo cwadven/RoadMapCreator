@@ -59,7 +59,7 @@ class RoadMapDetailAPI(APIView):
             basenode_degree_set = BaseNodeDegree.objects.select_related(
                 'to_basenode__roadmap',
                 'from_basenode__roadmap',
-            ).filter(from_basenode__roadmap=roadmap)
+            ).filter(from_basenode__roadmap=roadmap).order_by('-from_basenode')
         except RoadMap.DoesNotExist as e:
             return Response(data={"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
