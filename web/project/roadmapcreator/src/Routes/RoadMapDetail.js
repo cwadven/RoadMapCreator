@@ -3,9 +3,21 @@ import {roadMap} from "api";
 import styled from 'styled-components';
 import {Link, useParams} from "react-router-dom";
 
-const RoadMapItem = styled.div`
-    margin-top: 20px;
+
+const NodeSvg = styled.svg`
 `;
+
+const NodeCircle = styled.circle`
+`;
+
+const NodeDiv = styled.div`
+    // z-index: 1000;
+    
+    &:hover ${NodeCircle}{
+        fill: red;
+    }
+`
+
 
 const HEADER_PX = 60;
 const OFFSET_PX = 200 + HEADER_PX * 2;
@@ -49,7 +61,7 @@ const RoadMapDetail = () => {
                     topEnd = (val.display_level + 1) * 200;
                     randomTopPosition = randRange(topStart + offset + 60, topEnd);
 
-                    isIntersect = Object.values(baseNodeCoord.current).some((obj)=>{
+                    isIntersect = Object.values(baseNodeCoord.current).some((obj) => {
                         if (Math.sqrt(Math.pow(obj.left - randomLeftPosition, 2) + Math.pow(obj.top - randomTopPosition, 2)) > RADIUS * 2) {
                             return false
                         }
@@ -76,26 +88,28 @@ const RoadMapDetail = () => {
         <div>
             {/* 겹치지 않도록 설정하기 */}
             {roadMapDetail && roadMapDetail.basenode_set.map(val => {
-                return <div key={val.id} style={{
-                    position: 'fixed',
-                    left: val.position.left,
-                    top: val.position.top,
-                }}>
-                    <div style={{
-                        position: "absolute",
-                        top: "50%",
-                        left: "50%",
-                        transform: "translate(-50%, -50%)",
+                return (
+                    <NodeDiv key={val.id} style={{
+                        position: 'fixed',
+                        left: val.position.left,
+                        top: val.position.top,
                     }}>
-                        L:{val.display_level}/ID:{val.id}
-                    </div>
-                    <svg style={{
-                        width: `${RADIUS * 2}px`,
-                        height: `${RADIUS * 2}px`
-                    }}>
-                        <circle cx={RADIUS} cy={RADIUS} r={RADIUS} fill="#FF6F91"/>
-                    </svg>
-                </div>
+                        <div style={{
+                            position: "absolute",
+                            top: "50%",
+                            left: "50%",
+                            transform: "translate(-50%, -50%)",
+                        }}>
+                            L:{val.display_level}/ID:{val.id}
+                        </div>
+                        <NodeSvg style={{
+                            width: `${RADIUS * 2}px`,
+                            height: `${RADIUS * 2}px`
+                        }}>
+                            <NodeCircle cx={RADIUS} cy={RADIUS} r={RADIUS} fill="#FF6F91"/>
+                        </NodeSvg>
+                    </NodeDiv>
+                )
             })}
             {/* 선 */}
             {roadMapDegreeDetail && roadMapDegreeDetail.map((val) => {
