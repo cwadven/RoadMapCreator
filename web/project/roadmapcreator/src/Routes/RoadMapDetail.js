@@ -61,8 +61,6 @@ const RoadMapDetail = () => {
 
                 baseNodeCoord.current[val.id] = position;
 
-                console.log(Object.values(baseNodeCoord.current));
-
                 return {...val, position}
             })
 
@@ -89,7 +87,7 @@ const RoadMapDetail = () => {
                         left: "50%",
                         transform: "translate(-50%, -50%)",
                     }}>
-                        {val.display_level}/{val.id}
+                        L:{val.display_level}/ID:{val.id}
                     </div>
                     <svg style={{
                         width: `${RADIUS * 2}px`,
@@ -170,8 +168,9 @@ const RoadMapDetail = () => {
                 return (
                     <svg key={val.id} style={{
                         position: "fixed",
-                        width: width,
-                        height: height,
+                        // 잘려서 보이는 현상으로 + 5 정도 추가
+                        width: width + 5,
+                        height: height + 5,
                         left: widthMin + RADIUS,
                         top: heightMin + RADIUS
                     }}>
