@@ -17,6 +17,10 @@ const RoadMapDetail = () => {
     const baseNodeCoord = useRef({});
     let params = useParams();
 
+    const randRange = (min, max) => {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
     useEffect(() => {
         const fetchData = async () => {
             const {data: {success}} = await roadMap.roadMapDetail(params.roadMapId);
@@ -27,17 +31,37 @@ const RoadMapDetail = () => {
             data.roadmap.basenode_set = data.roadmap.basenode_set.map(val => {
                 const offset = OFFSET_PX * val.display_level;
 
-                const leftStart = 0;
-                const leftEnd = document.documentElement.clientWidth - 100;
-                const randomLeftPosition = randRange(leftStart, leftEnd);
+                let leftStart;
+                let leftEnd;
+                let randomLeftPosition;
+                let topStart;
+                let topEnd;
+                let randomTopPosition;
+                let isIntersect = true;
 
-                const topStart = val.display_level * 200;
-                const topEnd = (val.display_level + 1) * 200;
-                const randomTopPosition = randRange(topStart + offset + 60, topEnd);
+                // Node 가 겹치지 않도록 떨어지도록 설정
+                while (isIntersect) {
+                    leftStart = 0;
+                    leftEnd = document.documentElement.clientWidth - 100;
+                    randomLeftPosition = randRange(leftStart, leftEnd);
+
+                    topStart = val.display_level * 200;
+                    topEnd = (val.display_level + 1) * 200;
+                    randomTopPosition = randRange(topStart + offset + 60, topEnd);
+
+                    isIntersect = Object.values(baseNodeCoord.current).some((obj)=>{
+                        if (Math.sqrt(Math.pow(obj.left - randomLeftPosition, 2) + Math.pow(obj.top - randomTopPosition, 2)) > RADIUS * 2) {
+                            return false
+                        }
+                        return true
+                    })
+                }
 
                 const position = {left: randomLeftPosition, top: randomTopPosition}
 
                 baseNodeCoord.current[val.id] = position;
+
+                console.log(Object.values(baseNodeCoord.current));
 
                 return {...val, position}
             })
@@ -50,15 +74,9 @@ const RoadMapDetail = () => {
 
     }, [])
 
-    console.log(roadMapDegreeDetail)
-
-    const randRange = (min, max) => {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
-
     return (
         <div>
-            {/* 어떻게 연결할지 생각 원래 연결하는 Degree 하나로 묶어서 각각 선 만들어보기 생각중 */}
+            {/* 겹치지 않도록 설정하기 */}
             {roadMapDetail && roadMapDetail.basenode_set.map(val => {
                 return <div key={val.id} style={{
                     position: 'fixed',
@@ -167,10 +185,10 @@ const RoadMapDetail = () => {
                         <polyline
                             points={`${x1},${y1} ${x2},${y2}`}
                             fill="none"
-                            stroke-width="2"
+                            strokeWidth="2"
                             stroke="grey"
-                            marker-start={reverse ? "url(#arrow)" : ""}
-                            marker-end={reverse ? "" : "url(#arrow)"}
+                            markerStart={reverse ? "url(#arrow)" : ""}
+                            markerEnd={reverse ? "" : "url(#arrow)"}
                         />
                     </svg>
                 )
