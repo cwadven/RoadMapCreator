@@ -10,9 +10,16 @@ const RoadMapItem = styled.div`
 const Home = () => {
     const [roadMapSet, setRoadMapSet] = useState([]);
 
-    useEffect(async () => {
-        const {data: {roadmap_set}} = await roadMap.roadMapList();
-        setRoadMapSet(roadmap_set);
+    useEffect(() => {
+        const fetchData = async () => {
+            const {data: {roadmap_set}} = await roadMap.roadMapList();
+            return roadmap_set
+        }
+
+        fetchData().then((roadmap_set)=>{
+            setRoadMapSet(roadmap_set);
+        });
+
     }, [])
 
     return (
