@@ -20,8 +20,10 @@ const NodeDiv = styled.div`
 
 
 const HEADER_PX = 60;
-const OFFSET_PX = 200 + HEADER_PX * 2;
+const LEVEL_OFFSET_PX = 200 + HEADER_PX * 2;
 const RADIUS = 50;
+const NODE_MARGIN = RADIUS * 2.5;
+const DEGREE_PADDING = RADIUS + 10;
 
 const RoadMapDetail = () => {
     const [roadMapDetail, setRoadMapDetailSet] = useState(null);
@@ -33,6 +35,10 @@ const RoadMapDetail = () => {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
+    const calcAngle = (x, y) => {
+        return Math.atan2(y, x) * 180 / Math.PI;
+    }
+
     useEffect(() => {
         const fetchData = async () => {
             const {data: {success}} = await roadMap.roadMapDetail(params.roadMapId);
@@ -41,7 +47,7 @@ const RoadMapDetail = () => {
 
         fetchData().then((data) => {
             data.roadmap.basenode_set = data.roadmap.basenode_set.map(val => {
-                const offset = OFFSET_PX * val.display_level;
+                const offset = LEVEL_OFFSET_PX * val.display_level;
 
                 let leftStart;
                 let leftEnd;
@@ -62,7 +68,7 @@ const RoadMapDetail = () => {
                     randomTopPosition = randRange(topStart + offset + 60, topEnd);
 
                     isIntersect = Object.values(baseNodeCoord.current).some((obj) => {
-                        if (Math.sqrt(Math.pow(obj.left - randomLeftPosition, 2) + Math.pow(obj.top - randomTopPosition, 2)) > RADIUS * 2) {
+                        if (Math.sqrt(Math.pow(obj.left - randomLeftPosition, 2) + Math.pow(obj.top - randomTopPosition, 2)) > NODE_MARGIN) {
                             return false
                         }
                         return true
@@ -113,70 +119,111 @@ const RoadMapDetail = () => {
             })}
             {/* 선 */}
             {roadMapDegreeDetail && roadMapDegreeDetail.map((val) => {
+                // 만드는 선에서 50 px 더 적게 양쪽
                 let widthMax;
                 let widthMin;
 
+                // Math.pow(baseNodeCoord.current[val.from_basenode_id].left - ??, 2) + Math.pow(baseNodeCoord.current[val.from_basenode_id].top - ??, 2)
+                // 각도 알기기
+                let angle;
+
+                let x_1;
+                let x_2;
+
+                // Node 가 오른쪽
                 if (baseNodeCoord.current[val.from_basenode_id].left > baseNodeCoord.current[val.to_basenode_id].left) {
                     widthMax = baseNodeCoord.current[val.from_basenode_id].left;
                     widthMin = baseNodeCoord.current[val.to_basenode_id].left;
+                    x_1 = widthMax;
+                    x_2 = widthMin;
                 } else {
+                    // Node 가 왼쪽
                     widthMax = baseNodeCoord.current[val.to_basenode_id].left;
                     widthMin = baseNodeCoord.current[val.from_basenode_id].left;
+                    x_1 = widthMin;
+                    x_2 = widthMax;
                 }
 
-                const width = widthMax - widthMin;
+                let width = widthMax - widthMin;
 
                 let heightMax;
                 let heightMin;
+                let y_1;
+                let y_2;
 
+                // Node 가 아래쪽
                 if (baseNodeCoord.current[val.from_basenode_id].top > baseNodeCoord.current[val.to_basenode_id].top) {
                     heightMax = baseNodeCoord.current[val.from_basenode_id].top;
                     heightMin = baseNodeCoord.current[val.to_basenode_id].top;
+                    y_1 = heightMax;
+                    y_2 = heightMin;
                 } else {
+                    // Node 가 위쪽
                     heightMax = baseNodeCoord.current[val.to_basenode_id].top;
                     heightMin = baseNodeCoord.current[val.from_basenode_id].top;
+                    y_1 = heightMin;
+                    y_2 = heightMax;
                 }
 
-                const height = heightMax - heightMin;
+                let height = heightMax - heightMin;
+
+                if (x_1 > x_2) {
+                    angle = Math.abs(calcAngle(x_1 - x_2, y_1 - y_2));
+                } else {
+                    angle = Math.abs(calcAngle(x_2 - x_1, y_2 - y_1));
+                }
+
+                const forCos = Math.abs(Math.cos(angle * Math.PI / 180) * DEGREE_PADDING);
+                const forSin = Math.abs(Math.sin(angle * Math.PI / 180) * DEGREE_PADDING);
+
+                console.log(width, height)
+                console.log("angle", angle)
+                console.log(`Math.cos(${angle}) * ${RADIUS}`);
+                console.log(`Math.sin(${angle}) * ${RADIUS}`);
+                console.log("cos => ", forCos, "from", val.from_basenode_id, "to", val.to_basenode_id)
+                console.log("sin => ", forSin, "from", val.from_basenode_id, "to", val.to_basenode_id)
+                console.log("--------")
 
                 let x1;
                 let y1;
                 let x2;
                 let y2;
-                let reverse;
 
                 if (baseNodeCoord.current[val.from_basenode_id].left > baseNodeCoord.current[val.to_basenode_id].left && baseNodeCoord.current[val.to_basenode_id].top > baseNodeCoord.current[val.from_basenode_id].top) {
-                    // 뒤집기
-                    // 화살표 방향 : 위 -> 아래 / 오른쪽 -> 왼쪽
-                    x1 = 0;
-                    y1 = height;
-                    x2 = width;
-                    y2 = 0;
-                    reverse = true;
+                    x1 = width - forCos;
+                    y1 = 0 + forSin;
+                    x2 = 0 + forCos;
+                    y2 = height - forSin;
+
+                    height += forSin;
+                    width += forCos;
                 } else if (baseNodeCoord.current[val.from_basenode_id].left < baseNodeCoord.current[val.to_basenode_id].left && baseNodeCoord.current[val.to_basenode_id].top < baseNodeCoord.current[val.from_basenode_id].top) {
-                    // 뒤집기 :
                     // 화살표 방향 : 아래 -> 위 / 왼쪽 -> 오른쪽
-                    x1 = width;
-                    y1 = 0;
-                    x2 = 0;
-                    y2 = height;
-                    reverse = true;
+                    x1 = 0 + forCos;
+                    y1 = height - forSin;
+                    x2 = width - forCos;
+                    y2 = 0 + forSin;
+
+                    height += forSin;
+                    width += forCos;
                 } else if (baseNodeCoord.current[val.from_basenode_id].left < baseNodeCoord.current[val.to_basenode_id].left && baseNodeCoord.current[val.to_basenode_id].top > baseNodeCoord.current[val.from_basenode_id].top) {
-                    // 뒤집지 않기 :
                     // 화살표 방향 : 위 -> 아래 / 왼쪽 -> 오른쪽
-                    x1 = 0;
-                    y1 = 0;
-                    x2 = width;
-                    y2 = height;
-                    reverse = false;
+                    x1 = 0 + forCos;
+                    y1 = 0 + forSin;
+                    x2 = width - forCos;
+                    y2 = height - forSin;
+
+                    height += forSin;
+                    width += forCos;
                 } else if (baseNodeCoord.current[val.from_basenode_id].left > baseNodeCoord.current[val.to_basenode_id].left && baseNodeCoord.current[val.to_basenode_id].top < baseNodeCoord.current[val.from_basenode_id].top) {
-                    // 뒤집지 않기 :
                     // 화살표 방향 : 아래 -> 위 / 오른쪽 -> 왼쪽
-                    x1 = width;
-                    y1 = height;
-                    x2 = 0;
-                    y2 = 0;
-                    reverse = false;
+                    x1 = width - forCos;
+                    y1 = height - forSin;
+                    x2 = 0 + forCos;
+                    y2 = 0 + forSin;
+
+                    height += forSin;
+                    width += forCos;
                 }
 
                 return (
@@ -186,7 +233,7 @@ const RoadMapDetail = () => {
                         width: width + 5,
                         height: height + 5,
                         left: widthMin + RADIUS,
-                        top: heightMin + RADIUS
+                        top: heightMin + RADIUS,
                     }}>
                         <defs>
                             <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5"
@@ -200,8 +247,7 @@ const RoadMapDetail = () => {
                             fill="none"
                             strokeWidth="2"
                             stroke="grey"
-                            markerStart={reverse ? "url(#arrow)" : ""}
-                            markerEnd={reverse ? "" : "url(#arrow)"}
+                            markerEnd="url(#arrow)"
                         />
                     </svg>
                 )
