@@ -11,7 +11,7 @@ const NodeCircle = styled.circle`
 `;
 
 const NodeDiv = styled.div`
-    // z-index: 1000;
+    z-index: 1000;
     
     &:hover ${NodeCircle}{
         fill: red;
