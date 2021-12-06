@@ -8,13 +8,13 @@ from django.conf.urls.static import static
 
 from django.views.generic import TemplateView
 
-from web.views import home
-
 routes = settings.REACT_ROUTES
 
 urlpatterns = [
-    url(r'^(%s)?$' % '|'.join(routes), TemplateView.as_view(template_name="index.html"), name='index'),
-    path('', home, name='home'),
+    path('', TemplateView.as_view(template_name="index.html"), name='index'),
+    path('roadmap', TemplateView.as_view(template_name="index.html"), name='index'),
+    path('roadmap/<int:roadmap_id>', TemplateView.as_view(template_name="index.html"), name='index'),
+
     path('admin', admin.site.urls),
 
     # 회원
