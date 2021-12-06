@@ -18,6 +18,17 @@ const NodeDiv = styled.div`
     }
 `
 
+const DegreeWeightDiv = styled.div`
+`;
+
+const DegreeDiv = styled.div`
+    // z-index: 1000;
+    
+    &:hover ${DegreeWeightDiv}{
+        color: red;
+    }
+`
+
 
 const HEADER_PX = 60;
 const LEVEL_OFFSET_PX = 200 + HEADER_PX * 2;
@@ -176,27 +187,20 @@ const RoadMapDetail = () => {
                 const forCos = Math.abs(Math.cos(angle * Math.PI / 180) * DEGREE_PADDING);
                 const forSin = Math.abs(Math.sin(angle * Math.PI / 180) * DEGREE_PADDING);
 
-                console.log(width, height)
-                console.log("angle", angle)
-                console.log(`Math.cos(${angle}) * ${RADIUS}`);
-                console.log(`Math.sin(${angle}) * ${RADIUS}`);
-                console.log("cos => ", forCos, "from", val.from_basenode_id, "to", val.to_basenode_id)
-                console.log("sin => ", forSin, "from", val.from_basenode_id, "to", val.to_basenode_id)
-                console.log("--------")
-
                 let x1;
                 let y1;
                 let x2;
                 let y2;
 
                 if (baseNodeCoord.current[val.from_basenode_id].left > baseNodeCoord.current[val.to_basenode_id].left && baseNodeCoord.current[val.to_basenode_id].top > baseNodeCoord.current[val.from_basenode_id].top) {
+                    // 화살표 방향 : 위 -> 아래 / 오른쪽 -> 왼쪽
                     x1 = width - forCos;
                     y1 = 0 + forSin;
                     x2 = 0 + forCos;
                     y2 = height - forSin;
 
-                    height += forSin;
-                    width += forCos;
+                    // height += forSin;
+                    // width += forCos;
                 } else if (baseNodeCoord.current[val.from_basenode_id].left < baseNodeCoord.current[val.to_basenode_id].left && baseNodeCoord.current[val.to_basenode_id].top < baseNodeCoord.current[val.from_basenode_id].top) {
                     // 화살표 방향 : 아래 -> 위 / 왼쪽 -> 오른쪽
                     x1 = 0 + forCos;
@@ -204,8 +208,8 @@ const RoadMapDetail = () => {
                     x2 = width - forCos;
                     y2 = 0 + forSin;
 
-                    height += forSin;
-                    width += forCos;
+                    // height += forSin;
+                    // width += forCos;
                 } else if (baseNodeCoord.current[val.from_basenode_id].left < baseNodeCoord.current[val.to_basenode_id].left && baseNodeCoord.current[val.to_basenode_id].top > baseNodeCoord.current[val.from_basenode_id].top) {
                     // 화살표 방향 : 위 -> 아래 / 왼쪽 -> 오른쪽
                     x1 = 0 + forCos;
@@ -213,8 +217,8 @@ const RoadMapDetail = () => {
                     x2 = width - forCos;
                     y2 = height - forSin;
 
-                    height += forSin;
-                    width += forCos;
+                    // height += forSin;
+                    // width += forCos;
                 } else if (baseNodeCoord.current[val.from_basenode_id].left > baseNodeCoord.current[val.to_basenode_id].left && baseNodeCoord.current[val.to_basenode_id].top < baseNodeCoord.current[val.from_basenode_id].top) {
                     // 화살표 방향 : 아래 -> 위 / 오른쪽 -> 왼쪽
                     x1 = width - forCos;
@@ -222,34 +226,45 @@ const RoadMapDetail = () => {
                     x2 = 0 + forCos;
                     y2 = 0 + forSin;
 
-                    height += forSin;
-                    width += forCos;
+                    // height += forSin;
+                    // width += forCos;
                 }
 
                 return (
-                    <svg key={val.id} style={{
+                    <DegreeDiv key={val.id} style={{
                         position: "fixed",
-                        // 잘려서 보이는 현상으로 + 5 정도 추가
-                        width: width + 5,
-                        height: height + 5,
                         left: widthMin + RADIUS,
                         top: heightMin + RADIUS,
                     }}>
-                        <defs>
-                            <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5"
-                                    markerWidth="5" markerHeight="5"
-                                    orient="auto-start-reverse">
-                                <path d="M 0 0 L 10 5 L 0 10 z"/>
-                            </marker>
-                        </defs>
-                        <polyline
-                            points={`${x1},${y1} ${x2},${y2}`}
-                            fill="none"
-                            strokeWidth="2"
-                            stroke="grey"
-                            markerEnd="url(#arrow)"
-                        />
-                    </svg>
+                        <DegreeWeightDiv style={{
+                            position: "absolute",
+                            top: "50%",
+                            left: "50%",
+                            transform: "translate(-50%, -50%)",
+                        }}>
+                            {val.weight}
+                        </DegreeWeightDiv>
+                        <svg key={val.id} style={{
+                            // 잘려서 보이는 현상으로 + 5 정도 추가
+                            width: width + 5,
+                            height: height + 5,
+                        }}>
+                            <defs>
+                                <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5"
+                                        markerWidth="5" markerHeight="5"
+                                        orient="auto-start-reverse">
+                                    <path d="M 0 0 L 10 5 L 0 10 z"/>
+                                </marker>
+                            </defs>
+                            <polyline
+                                points={`${x1},${y1} ${x2},${y2}`}
+                                fill="none"
+                                strokeWidth="2"
+                                stroke="grey"
+                                markerEnd="url(#arrow)"
+                            />
+                        </svg>
+                    </DegreeDiv>
                 )
             })}
         </div>
