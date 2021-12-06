@@ -56,10 +56,6 @@ APPEND_SLASH = False
 
 SITE_ID = 1
 
-REACT_ROUTES = [
-    'roadmap',
-]
-
 # DRF Settings
 REST_FRAMEWORK = {
     'DEFAULT_PARSER_CLASSES': [

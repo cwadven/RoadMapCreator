@@ -8,8 +8,6 @@ from django.conf.urls.static import static
 
 from django.views.generic import TemplateView
 
-routes = settings.REACT_ROUTES
-
 urlpatterns = [
     path('', TemplateView.as_view(template_name="index.html"), name='index'),
     path('roadmap', TemplateView.as_view(template_name="index.html"), name='index'),
