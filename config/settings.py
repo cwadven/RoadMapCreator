@@ -56,6 +56,10 @@ APPEND_SLASH = False
 
 SITE_ID = 1
 
+REACT_ROUTES = [
+    'roadmap',
+]
+
 # DRF Settings
 REST_FRAMEWORK = {
     'DEFAULT_PARSER_CLASSES': [
@@ -175,8 +179,8 @@ USE_TZ = False
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 STATICFILES_DIRS = [
-    # 실제 static 파일은 모두 client 측에서 소유 
-    os.path.join(BASE_DIR, 'temp_static')
+    # 실제 static 파일은 모두 client 측에서 소유
+    os.path.join(BASE_DIR, './web/static/static'),
 ]
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
