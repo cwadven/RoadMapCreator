@@ -10,9 +10,19 @@ const NodeSvg = styled.svg`
 const NodeCircle = styled.circle`
 `;
 
+const NodeTransparentCircle = styled.circle`
+    // fill-opacity: 0;
+`;
+
 const NodeDiv = styled.div`
     // z-index: 1000;
     
+    &:hover ${NodeCircle}{
+        fill: red;
+    }
+`
+
+const NodeTransparentDiv = styled.div`
     &:hover ${NodeCircle}{
         fill: red;
     }
@@ -267,6 +277,23 @@ const RoadMapDetail = () => {
                             />
                         </svg>
                     </DegreeDiv>
+                )
+            })}
+            {/* 안보이는 것 노드 똑같이 */}
+            {roadMapDetail && roadMapDetail.basenode_set.map(val => {
+                return (
+                    <NodeTransparentDiv key={val.id} style={{
+                        position: 'absolute',
+                        left: val.position.left,
+                        top: val.position.top,
+                    }}>
+                        <NodeSvg style={{
+                            width: `${RADIUS * 2}px`,
+                            height: `${RADIUS * 2}px`
+                        }}>
+                            <NodeTransparentCircle cx={RADIUS} cy={RADIUS} r={RADIUS} fill="#00000000"/>
+                        </NodeSvg>
+                    </NodeTransparentDiv>
                 )
             })}
         </div>
