@@ -118,8 +118,9 @@ const RoadMapDetail = () => {
                             top: "50%",
                             left: "50%",
                             transform: "translate(-50%, -50%)",
+                            width: "fit-content",
                         }}>
-                            L:{val.display_level}/ID:{val.id}
+                            {val.name}
                         </div>
                         <NodeSvg style={{
                             width: `${RADIUS * 2}px`,
@@ -136,7 +137,6 @@ const RoadMapDetail = () => {
                 let widthMax;
                 let widthMin;
 
-                // Math.pow(baseNodeCoord.current[val.from_basenode_id].left - ??, 2) + Math.pow(baseNodeCoord.current[val.from_basenode_id].top - ??, 2)
                 // 각도 알기기
                 let angle;
 
