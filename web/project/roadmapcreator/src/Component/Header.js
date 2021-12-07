@@ -15,6 +15,7 @@ const Container = styled.header`
     padding: 0px 10px;
     background-color: rgba(20, 20, 20, 0.8);
     box-shadow: 0px 1px 5px 2px rgba(0, 0, 0, 0.8);
+    z-index: 1000;
 `;
 
 const List = styled.ul`
