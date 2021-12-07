@@ -37,6 +37,8 @@ const NODE_MARGIN = RADIUS * 2.5;
 const DEGREE_PADDING = RADIUS + 10;
 
 const RoadMapDetail = () => {
+    const [height, setHeight] = useState(window.innerHeight + RADIUS);
+
     const [roadMapDetail, setRoadMapDetailSet] = useState(null);
     const [roadMapDegreeDetail, setRoadMapDegreeDetailSet] = useState(null);
     const baseNodeCoord = useRef({});
@@ -102,7 +104,7 @@ const RoadMapDetail = () => {
     }, [])
 
     return (
-        <div>
+        <div style={{height: height}}>
             {/* 겹치지 않도록 설정하기 */}
             {roadMapDetail && roadMapDetail.basenode_set.map(val => {
                 return (
