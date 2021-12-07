@@ -339,6 +339,7 @@ class ShortestDirectionAPI(APIView):
 
         return Response(data={
             "success": {
+                "basenode_id_shortest_path": reversed(route),
                 "basenode_degree_shortest_connection_set": basenode_degree_shortest_connection_set,
                 "path_direction": f'출발지 [{pre_data[start_basenode_id]["id"]}], 도착지 [{pre_data[end_basenode_id]["id"]}] {shortest_path}',
                 "total_weight": pre_data[end_basenode_id]["distance"],
