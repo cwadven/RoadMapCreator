@@ -107,7 +107,7 @@ const RoadMapDetail = () => {
             {roadMapDetail && roadMapDetail.basenode_set.map(val => {
                 return (
                     <NodeDiv key={val.id} style={{
-                        position: 'fixed',
+                        position: 'absolute',
                         left: val.position.left,
                         top: val.position.top,
                     }}>
@@ -232,7 +232,7 @@ const RoadMapDetail = () => {
 
                 return (
                     <DegreeDiv key={val.id} style={{
-                        position: "fixed",
+                        position: "absolute",
                         left: widthMin + RADIUS,
                         top: heightMin + RADIUS,
                     }}>
