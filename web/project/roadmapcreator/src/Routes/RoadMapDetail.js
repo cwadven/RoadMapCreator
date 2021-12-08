@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {roadMap} from "api";
 import styled from 'styled-components';
-import {Link, useParams} from "react-router-dom";
+import {useParams} from "react-router-dom";
 
 
 const NodeSvg = styled.svg`
@@ -40,7 +40,7 @@ const DegreeDiv = styled.div`
 `
 
 
-const HEADER_PX = 60;
+const HEADER_PX = 100;
 const LEVEL_OFFSET_PX = 200 + HEADER_PX * 2;
 const RADIUS = 50;
 const NODE_MARGIN = RADIUS * 2.5;
@@ -52,6 +52,13 @@ const RoadMapDetail = () => {
     const [roadMapDetail, setRoadMapDetailSet] = useState(null);
     const [roadMapDegreeDetail, setRoadMapDegreeDetailSet] = useState(null);
     const baseNodeCoord = useRef({});
+
+    const startBasenodeId = useRef(null);
+    const endBasenodeId = useRef(null);
+
+    // const shortestPath = useState([]);
+    const [shortestWeight, setShortestWeight] = useState(null);
+
     let params = useParams();
 
     const randRange = (min, max) => {
@@ -60,6 +67,30 @@ const RoadMapDetail = () => {
 
     const calcAngle = (x, y) => {
         return Math.atan2(y, x) * 180 / Math.PI;
+    }
+
+    const findShortestPath = async () => {
+        document.querySelector(`circle`).style.fill = "#FF6F91";
+        document.querySelector(`polyline`).style.stroke = "grey";
+
+        if (startBasenodeId.current.value && endBasenodeId.current.value) {
+            const queryParams = {
+                start_basenode_id: startBasenodeId.current.value,
+                end_basenode_id: endBasenodeId.current.value,
+            }
+            const {data: {success}} = await roadMap.findShortestPath(params.roadMapId, queryParams);
+
+            setShortestWeight(success.total_weight);
+
+            success?.basenode_id_shortest_path.forEach((basenode_id, index) => {
+                document.querySelector(`#circle_${basenode_id}`).style.fill = "blue";
+            });
+            document.querySelector(`#circle_${startBasenodeId.current.value}`).style.fill = "green";
+            document.querySelector(`#circle_${endBasenodeId.current.value}`).style.fill = "green";
+
+        } else {
+            alert("시작ID, 도착ID 를 입력하세요!");
+        }
     }
 
     useEffect(() => {
@@ -88,7 +119,7 @@ const RoadMapDetail = () => {
 
                     topStart = val.display_level * 200;
                     topEnd = (val.display_level + 1) * 200;
-                    randomTopPosition = randRange(topStart + offset + 60, topEnd);
+                    randomTopPosition = randRange(topStart + offset + HEADER_PX, topEnd + offset + HEADER_PX);
 
                     isIntersect = Object.values(baseNodeCoord.current).some((obj) => {
                         if (Math.sqrt(Math.pow(obj.left - randomLeftPosition, 2) + Math.pow(obj.top - randomTopPosition, 2)) > NODE_MARGIN) {
@@ -136,6 +167,7 @@ const RoadMapDetail = () => {
                             position: "absolute",
                             top: "0",
                             left: "0",
+                            fontWeight: "bold"
                         }}>
                             {val.id}
                         </div>
@@ -143,7 +175,7 @@ const RoadMapDetail = () => {
                             width: `${RADIUS * 2}px`,
                             height: `${RADIUS * 2}px`
                         }}>
-                            <NodeCircle cx={RADIUS} cy={RADIUS} r={RADIUS} fill="#FF6F91"/>
+                            <NodeCircle id={`circle_${val.id}`} cx={RADIUS} cy={RADIUS} r={RADIUS} fill="#FF6F91"/>
                         </NodeSvg>
                     </NodeDiv>
                 )
@@ -276,6 +308,7 @@ const RoadMapDetail = () => {
                                 </marker>
                             </defs>
                             <polyline
+                                id={`degree_${val.from_basenode_id}`}
                                 points={`${x1},${y1} ${x2},${y2}`}
                                 fill="none"
                                 strokeWidth="2"
@@ -303,6 +336,18 @@ const RoadMapDetail = () => {
                     </NodeTransparentDiv>
                 )
             })}
+            <div style={{background: "white", padding: "10px"}}>
+                <div style={{marginBottom: "10px"}}>
+                    시작 ID: <input type="number" name="startBasenodeId" ref={startBasenodeId}/>
+                    도착 ID: <input type="number" name="endBasenodeId" ref={endBasenodeId}/>
+                </div>
+                <div>
+                    <button onClick={findShortestPath}>
+                        최단 거리 선택하기
+                    </button>
+                    {shortestWeight !== null && shortestWeight} 걸림
+                </div>
+            </div>
         </div>
     );
 }

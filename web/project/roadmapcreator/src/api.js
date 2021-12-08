@@ -11,7 +11,7 @@ const api = axios.create({
 export const roadMap = {
     roadMapList: () => api.get('/roadmap'),
     roadMapDetail: (roadMapId) => api.get(`/roadmap/${roadMapId}`),
-    findShortestPath: (roadMapId) => api.get(`/roadmap/${roadMapId}/shortest-direction`, {}),
+    findShortestPath: (roadMapId, queryParams) => api.get(`/roadmap/${roadMapId}/shortest-direction`, {params: queryParams}),
 };
 
 export const baseNode = {
