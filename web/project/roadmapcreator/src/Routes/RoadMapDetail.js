@@ -132,6 +132,13 @@ const RoadMapDetail = () => {
                         }}>
                             {val.name}
                         </div>
+                        <div style={{
+                            position: "absolute",
+                            top: "0",
+                            left: "0",
+                        }}>
+                            {val.id}
+                        </div>
                         <NodeSvg style={{
                             width: `${RADIUS * 2}px`,
                             height: `${RADIUS * 2}px`
