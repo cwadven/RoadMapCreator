@@ -70,8 +70,9 @@ const RoadMapDetail = () => {
     }
 
     const findShortestPath = async () => {
-        document.querySelector(`circle`).style.fill = "#FF6F91";
-        document.querySelector(`polyline`).style.stroke = "grey";
+        Object.keys(baseNodeCoord.current).forEach((baseNodeId)=>{
+            document.querySelector(`#circle_${baseNodeId}`).style.fill = "#FF6F91";
+        });
 
         if (startBasenodeId.current.value && endBasenodeId.current.value) {
             const queryParams = {
