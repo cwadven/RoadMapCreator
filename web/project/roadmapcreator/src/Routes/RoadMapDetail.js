@@ -70,7 +70,7 @@ const RoadMapDetail = () => {
     }
 
     const findShortestPath = async () => {
-        Object.keys(baseNodeCoord.current).forEach((baseNodeId)=>{
+        Object.keys(baseNodeCoord.current).forEach((baseNodeId) => {
             document.querySelector(`#circle_${baseNodeId}`).style.fill = "#FF6F91";
         });
 
@@ -79,15 +79,27 @@ const RoadMapDetail = () => {
                 start_basenode_id: startBasenodeId.current.value,
                 end_basenode_id: endBasenodeId.current.value,
             }
-            const {data: {success}} = await roadMap.findShortestPath(params.roadMapId, queryParams);
+
+            const {data: {success}} = await roadMap.findShortestPath(params.roadMapId, queryParams).catch((error) => {
+                alert(error.response.data.detail);
+                return {data: {success: false}};
+            });
+
+            if (!success){
+                return;
+            }
 
             setShortestWeight(success.total_weight);
 
             success?.basenode_id_shortest_path.forEach((basenode_id, index) => {
-                document.querySelector(`#circle_${basenode_id}`).style.fill = "blue";
+                document.querySelector(`#circle_${basenode_id}`).style.fill = "#FFC75F";
             });
-            document.querySelector(`#circle_${startBasenodeId.current.value}`).style.fill = "green";
-            document.querySelector(`#circle_${endBasenodeId.current.value}`).style.fill = "green";
+            success?.basenode_degree_shortest_connection_set.forEach((degree) => {
+                document.querySelector(`#degree_${degree.id}`).style.stroke = "red";
+            });
+
+            document.querySelector(`#circle_${startBasenodeId.current.value}`).style.fill = "#F3C5FF";
+            document.querySelector(`#circle_${endBasenodeId.current.value}`).style.fill = "#F3C5FF";
 
         } else {
             alert("시작ID, 도착ID 를 입력하세요!");
@@ -309,7 +321,7 @@ const RoadMapDetail = () => {
                                 </marker>
                             </defs>
                             <polyline
-                                id={`degree_${val.from_basenode_id}`}
+                                id={`degree_${val.id}`}
                                 points={`${x1},${y1} ${x2},${y2}`}
                                 fill="none"
                                 strokeWidth="2"
@@ -346,7 +358,7 @@ const RoadMapDetail = () => {
                     <button onClick={findShortestPath}>
                         최단 거리 선택하기
                     </button>
-                    {shortestWeight !== null && shortestWeight} 걸림
+                    {shortestWeight !== null && shortestWeight + "걸림"}
                 </div>
             </div>
         </div>
