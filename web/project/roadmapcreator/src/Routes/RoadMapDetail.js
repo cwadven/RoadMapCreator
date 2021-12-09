@@ -40,7 +40,7 @@ const DegreeDiv = styled.div`
 `
 
 
-const HEADER_PX = 100;
+const HEADER_PX = 50;
 const LEVEL_OFFSET_PX = 200 + HEADER_PX * 2;
 const RADIUS = 50;
 const NODE_MARGIN = RADIUS * 2.5;
