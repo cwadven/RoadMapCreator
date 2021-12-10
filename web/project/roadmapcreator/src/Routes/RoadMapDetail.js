@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {roadMap} from "api";
 import styled from 'styled-components';
 import {useParams} from "react-router-dom";
@@ -34,10 +34,13 @@ const DegreeWeightDiv = styled.div`
 const DegreeDiv = styled.div`
     // z-index: 1000;
     
-    &:hover ${DegreeWeightDiv}{
-        color: red;
-    }
+    // &:hover ${DegreeWeightDiv}{
+    //     color: red;
+    // }
 `
+
+const DegreePolyLine = styled.polyline`
+`;
 
 
 const HEADER_PX = 50;
@@ -56,7 +59,38 @@ const RoadMapDetail = () => {
     const startBasenodeId = useRef(null);
     const endBasenodeId = useRef(null);
 
-    // const shortestPath = useState([]);
+    const onCircleTouchOrOverAction = useMemo(() => {
+        console.log(roadMapDegreeDetail)
+        return (id) => {
+            let all_to = roadMapDegreeDetail && roadMapDegreeDetail.filter((data) => data?.from_basenode_id == id);
+
+            const findNextNodePaint = (color) => {
+                all_to && all_to.forEach((data) => {
+                    document.getElementById(`circle_${data.to_basenode_id}`).style.fill = color;
+                })
+            };
+
+            return {
+                onMouseOver: () => {
+                    findNextNodePaint("yellow");
+                    document.getElementById(`circle_${id}`).style.fill = "red";
+                },
+                onMouseOut: () => {
+                    findNextNodePaint("#FF6F91");
+                    document.getElementById(`circle_${id}`).style.fill = "#FF6F91";
+                },
+                onTouchStart: () => {
+                    findNextNodePaint("yellow");
+                    document.getElementById(`circle_${id}`).style.fill = "red";
+                },
+                onTouchEnd: () => {
+                    findNextNodePaint("#FF6F91");
+                    document.getElementById(`circle_${id}`).style.fill = "#FF6F91";
+                }
+            }
+        }
+    }, [roadMapDegreeDetail]);
+
     const [shortestWeight, setShortestWeight] = useState(null);
 
     let params = useParams();
@@ -320,7 +354,7 @@ const RoadMapDetail = () => {
                         left: widthMin + RADIUS,
                         top: heightMin + RADIUS,
                     }}>
-                        <DegreeWeightDiv style={{
+                        <DegreeWeightDiv id={`weight_${val.id}`} style={{
                             position: "absolute",
                             top: "50%",
                             left: "50%",
@@ -340,7 +374,7 @@ const RoadMapDetail = () => {
                                     <path d="M 0 0 L 10 5 L 0 10 z"/>
                                 </marker>
                             </defs>
-                            <polyline
+                            <DegreePolyLine
                                 id={`degree_${val.id}`}
                                 points={`${x1},${y1} ${x2},${y2}`}
                                 fill="none"
@@ -364,7 +398,13 @@ const RoadMapDetail = () => {
                             width: `${RADIUS * 2}px`,
                             height: `${RADIUS * 2}px`
                         }}>
-                            <NodeTransparentCircle cx={RADIUS} cy={RADIUS} r={RADIUS} fill="#00000000"/>
+                            <NodeTransparentCircle
+                                cx={RADIUS}
+                                cy={RADIUS}
+                                r={RADIUS}
+                                fill="#00000000"
+                                {...onCircleTouchOrOverAction(val.id)}
+                            />
                         </NodeSvg>
                     </NodeTransparentDiv>
                 )
