@@ -60,7 +60,6 @@ const RoadMapDetail = () => {
     const endBasenodeId = useRef(null);
 
     const onCircleTouchOrOverAction = useMemo(() => {
-        console.log(roadMapDegreeDetail)
         return (id) => {
             let all_to = roadMapDegreeDetail && roadMapDegreeDetail.filter((data) => data?.from_basenode_id == id);
 
@@ -71,22 +70,24 @@ const RoadMapDetail = () => {
             };
 
             return {
-                onMouseOver: () => {
+                onMouseOver: (e) => {
                     findNextNodePaint("yellow");
                     document.getElementById(`circle_${id}`).style.fill = "red";
+                    e.preventDefault();
                 },
-                onMouseOut: () => {
+                onMouseOut: (e) => {
                     findNextNodePaint("#FF6F91");
                     document.getElementById(`circle_${id}`).style.fill = "#FF6F91";
+                    e.preventDefault();
                 },
-                onTouchStart: () => {
-                    findNextNodePaint("yellow");
-                    document.getElementById(`circle_${id}`).style.fill = "red";
-                },
-                onTouchEnd: () => {
-                    findNextNodePaint("#FF6F91");
-                    document.getElementById(`circle_${id}`).style.fill = "#FF6F91";
-                }
+                // onTouchStart: () => {
+                //     findNextNodePaint("yellow");
+                //     document.getElementById(`circle_${id}`).style.fill = "red";
+                // },
+                // onTouchEnd: () => {
+                //     findNextNodePaint("#FF6F91");
+                //     document.getElementById(`circle_${id}`).style.fill = "#FF6F91";
+                // }
             }
         }
     }, [roadMapDegreeDetail]);
