@@ -43,7 +43,7 @@ const DegreePolyLine = styled.polyline`
 `;
 
 
-const HEADER_PX = 50;
+const HEADER_PX = 150;
 const LEVEL_OFFSET_PX = 50 + HEADER_PX * 2;
 const RADIUS = 50;
 const NODE_MARGIN = RADIUS * 2.5;
