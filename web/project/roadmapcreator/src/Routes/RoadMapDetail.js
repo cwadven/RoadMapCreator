@@ -48,6 +48,7 @@ const LEVEL_OFFSET_PX = 50 + HEADER_PX * 2;
 const RADIUS = 50;
 const NODE_MARGIN = RADIUS * 2.5;
 const DEGREE_PADDING = RADIUS + 10;
+const DEFAULT_COLOR = "#FF6F91";
 
 const RoadMapDetail = () => {
     const [height, setHeight] = useState(window.innerHeight + RADIUS);
@@ -59,13 +60,18 @@ const RoadMapDetail = () => {
     const startBasenodeId = useRef(null);
     const endBasenodeId = useRef(null);
 
+    // 기본 색깔 정보 넣기
     const onCircleTouchOrOverAction = useMemo(() => {
         return (id) => {
             let all_to = roadMapDegreeDetail && roadMapDegreeDetail.filter((data) => data?.from_basenode_id == id);
 
             const findNextNodePaint = (color) => {
                 all_to && all_to.forEach((data) => {
-                    document.getElementById(`circle_${data.to_basenode_id}`).style.fill = color;
+                    if (color == "current") {
+                        document.getElementById(`circle_${data.to_basenode_id}`).style.fill = baseNodeCoord.current[data.to_basenode_id]["currentColor"];
+                    } else {
+                        document.getElementById(`circle_${data.to_basenode_id}`).style.fill = color;
+                    }
                 });
             };
 
@@ -76,8 +82,8 @@ const RoadMapDetail = () => {
                     e.preventDefault();
                 },
                 onMouseOut: (e) => {
-                    findNextNodePaint("#FF6F91");
-                    document.getElementById(`circle_${id}`).style.fill = "#FF6F91";
+                    findNextNodePaint("current");
+                    document.getElementById(`circle_${id}`).style.fill = baseNodeCoord.current[id]["currentColor"];
                     e.preventDefault();
                 },
                 // onTouchStart: () => {
@@ -113,16 +119,21 @@ const RoadMapDetail = () => {
 
     const setAllCircleDefaultColor = () => {
         Object.keys(baseNodeCoord.current).forEach((baseNodeId) => {
-            document.querySelector(`#circle_${baseNodeId}`).style.fill = "#FF6F91";
+            document.querySelector(`#circle_${baseNodeId}`).style.fill = baseNodeCoord.current[baseNodeId]["defaultColor"];
         });
     }
 
     const setShortestPathCircleColor = (data) => {
         data?.basenode_id_shortest_path.forEach((basenode_id) => {
             document.querySelector(`#circle_${basenode_id}`).style.fill = "#FFC75F";
+            baseNodeCoord.current[basenode_id]["currentColor"] = "#FFC75F";
         });
+
         document.querySelector(`#circle_${startBasenodeId.current.value}`).style.fill = "#F3C5FF";
+        baseNodeCoord.current[startBasenodeId.current.value]["currentColor"] = "#F3C5FF";
+
         document.querySelector(`#circle_${endBasenodeId.current.value}`).style.fill = "#F3C5FF";
+        baseNodeCoord.current[endBasenodeId.current.value]["currentColor"] = "#F3C5FF";
     }
 
     const setShortestPathPolyLineColor = (data) => {
@@ -190,7 +201,7 @@ const RoadMapDetail = () => {
                     randomTopPosition = randRange(topStart + offset + HEADER_PX, topEnd + offset + HEADER_PX);
 
                     isIntersect = Object.values(baseNodeCoord.current).some((obj) => {
-                        if (Math.sqrt(Math.pow(obj.left - randomLeftPosition, 2) + Math.pow(obj.top - randomTopPosition, 2)) > NODE_MARGIN) {
+                        if (Math.sqrt(Math.pow(obj.position.left - randomLeftPosition, 2) + Math.pow(obj.position.top - randomTopPosition, 2)) > NODE_MARGIN) {
                             return false
                         }
                         return true
@@ -199,9 +210,13 @@ const RoadMapDetail = () => {
 
                 const position = {left: randomLeftPosition, top: randomTopPosition}
 
-                baseNodeCoord.current[val.id] = position;
+                baseNodeCoord.current[val.id] = {
+                    position,
+                    defaultColor: val.hex_color_code ? val.hex_color_code : DEFAULT_COLOR,
+                    currentColor: val.hex_color_code ? val.hex_color_code : DEFAULT_COLOR,
+                };
 
-                return {...val, position}
+                return {...val, position, currentColor: val.hex_color_code ? val.hex_color_code : DEFAULT_COLOR}
             })
 
             setRoadMapDetailSet(data.roadmap);
@@ -243,7 +258,8 @@ const RoadMapDetail = () => {
                             width: `${RADIUS * 2}px`,
                             height: `${RADIUS * 2}px`
                         }}>
-                            <NodeCircle id={`circle_${val.id}`} cx={RADIUS} cy={RADIUS} r={RADIUS} fill="#FF6F91"/>
+                            <NodeCircle id={`circle_${val.id}`} cx={RADIUS} cy={RADIUS} r={RADIUS}
+                                        fill={val.hex_color_code ? val.hex_color_code : DEFAULT_COLOR}/>
                         </NodeSvg>
                     </NodeDiv>
                 )
@@ -261,15 +277,15 @@ const RoadMapDetail = () => {
                 let x_2;
 
                 // Node 가 오른쪽
-                if (baseNodeCoord.current[val.from_basenode_id].left > baseNodeCoord.current[val.to_basenode_id].left) {
-                    widthMax = baseNodeCoord.current[val.from_basenode_id].left;
-                    widthMin = baseNodeCoord.current[val.to_basenode_id].left;
+                if (baseNodeCoord.current[val.from_basenode_id]["position"].left > baseNodeCoord.current[val.to_basenode_id]["position"].left) {
+                    widthMax = baseNodeCoord.current[val.from_basenode_id]["position"].left;
+                    widthMin = baseNodeCoord.current[val.to_basenode_id]["position"].left;
                     x_1 = widthMax;
                     x_2 = widthMin;
                 } else {
                     // Node 가 왼쪽
-                    widthMax = baseNodeCoord.current[val.to_basenode_id].left;
-                    widthMin = baseNodeCoord.current[val.from_basenode_id].left;
+                    widthMax = baseNodeCoord.current[val.to_basenode_id]["position"].left;
+                    widthMin = baseNodeCoord.current[val.from_basenode_id]["position"].left;
                     x_1 = widthMin;
                     x_2 = widthMax;
                 }
@@ -282,15 +298,15 @@ const RoadMapDetail = () => {
                 let y_2;
 
                 // Node 가 아래쪽
-                if (baseNodeCoord.current[val.from_basenode_id].top > baseNodeCoord.current[val.to_basenode_id].top) {
-                    heightMax = baseNodeCoord.current[val.from_basenode_id].top;
-                    heightMin = baseNodeCoord.current[val.to_basenode_id].top;
+                if (baseNodeCoord.current[val.from_basenode_id]["position"].top > baseNodeCoord.current[val.to_basenode_id]["position"].top) {
+                    heightMax = baseNodeCoord.current[val.from_basenode_id]["position"].top;
+                    heightMin = baseNodeCoord.current[val.to_basenode_id]["position"].top;
                     y_1 = heightMax;
                     y_2 = heightMin;
                 } else {
                     // Node 가 위쪽
-                    heightMax = baseNodeCoord.current[val.to_basenode_id].top;
-                    heightMin = baseNodeCoord.current[val.from_basenode_id].top;
+                    heightMax = baseNodeCoord.current[val.to_basenode_id]["position"].top;
+                    heightMin = baseNodeCoord.current[val.from_basenode_id]["position"].top;
                     y_1 = heightMin;
                     y_2 = heightMax;
                 }
@@ -311,7 +327,7 @@ const RoadMapDetail = () => {
                 let x2;
                 let y2;
 
-                if (baseNodeCoord.current[val.from_basenode_id].left > baseNodeCoord.current[val.to_basenode_id].left && baseNodeCoord.current[val.to_basenode_id].top > baseNodeCoord.current[val.from_basenode_id].top) {
+                if (baseNodeCoord.current[val.from_basenode_id]["position"].left > baseNodeCoord.current[val.to_basenode_id]["position"].left && baseNodeCoord.current[val.to_basenode_id]["position"].top > baseNodeCoord.current[val.from_basenode_id]["position"].top) {
                     // 화살표 방향 : 위 -> 아래 / 오른쪽 -> 왼쪽
                     x1 = width - forCos;
                     y1 = 0 + forSin;
@@ -320,7 +336,7 @@ const RoadMapDetail = () => {
 
                     // height += forSin;
                     // width += forCos;
-                } else if (baseNodeCoord.current[val.from_basenode_id].left < baseNodeCoord.current[val.to_basenode_id].left && baseNodeCoord.current[val.to_basenode_id].top < baseNodeCoord.current[val.from_basenode_id].top) {
+                } else if (baseNodeCoord.current[val.from_basenode_id]["position"].left < baseNodeCoord.current[val.to_basenode_id]["position"].left && baseNodeCoord.current[val.to_basenode_id]["position"].top < baseNodeCoord.current[val.from_basenode_id]["position"].top) {
                     // 화살표 방향 : 아래 -> 위 / 왼쪽 -> 오른쪽
                     x1 = 0 + forCos;
                     y1 = height - forSin;
@@ -329,7 +345,7 @@ const RoadMapDetail = () => {
 
                     // height += forSin;
                     // width += forCos;
-                } else if (baseNodeCoord.current[val.from_basenode_id].left < baseNodeCoord.current[val.to_basenode_id].left && baseNodeCoord.current[val.to_basenode_id].top > baseNodeCoord.current[val.from_basenode_id].top) {
+                } else if (baseNodeCoord.current[val.from_basenode_id]["position"].left < baseNodeCoord.current[val.to_basenode_id]["position"].left && baseNodeCoord.current[val.to_basenode_id]["position"].top > baseNodeCoord.current[val.from_basenode_id]["position"].top) {
                     // 화살표 방향 : 위 -> 아래 / 왼쪽 -> 오른쪽
                     x1 = 0 + forCos;
                     y1 = 0 + forSin;
@@ -338,7 +354,7 @@ const RoadMapDetail = () => {
 
                     // height += forSin;
                     // width += forCos;
-                } else if (baseNodeCoord.current[val.from_basenode_id].left > baseNodeCoord.current[val.to_basenode_id].left && baseNodeCoord.current[val.to_basenode_id].top < baseNodeCoord.current[val.from_basenode_id].top) {
+                } else if (baseNodeCoord.current[val.from_basenode_id]["position"].left > baseNodeCoord.current[val.to_basenode_id]["position"].left && baseNodeCoord.current[val.to_basenode_id]["position"].top < baseNodeCoord.current[val.from_basenode_id]["position"].top) {
                     // 화살표 방향 : 아래 -> 위 / 오른쪽 -> 왼쪽
                     x1 = width - forCos;
                     y1 = height - forSin;
@@ -360,6 +376,10 @@ const RoadMapDetail = () => {
                             top: "50%",
                             left: "50%",
                             transform: "translate(-50%, -50%)",
+                            background: "white",
+                            borderRadius: "60%",
+                            zIndex: 10000,
+                            padding: "5px",
                         }}>
                             {val.weight}
                         </DegreeWeightDiv>
