@@ -378,7 +378,7 @@ const RoadMapDetail = () => {
                             transform: "translate(-50%, -50%)",
                             background: "white",
                             borderRadius: "60%",
-                            zIndex: 10000,
+                            zIndex: 999,
                             padding: "5px",
                         }}>
                             {val.weight}
