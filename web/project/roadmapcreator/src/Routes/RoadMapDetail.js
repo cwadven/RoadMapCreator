@@ -66,7 +66,7 @@ const RoadMapDetail = () => {
             const findNextNodePaint = (color) => {
                 all_to && all_to.forEach((data) => {
                     document.getElementById(`circle_${data.to_basenode_id}`).style.fill = color;
-                })
+                });
             };
 
             return {
