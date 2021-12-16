@@ -9,6 +9,10 @@ jobs:
     runs-on: self-hosted
 
     steps:
+    - name: Pull Master Branch
+      run: |
+        cd /var/www/roadmap/ && sudo git pull origin master
+        
     - name: Deploy with React Build
       run: |
         sudo sh /var/www/roadmap/deploy.sh
