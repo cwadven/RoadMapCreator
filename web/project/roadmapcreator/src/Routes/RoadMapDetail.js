@@ -60,10 +60,10 @@ const RoadMapDetail = () => {
     const startBasenodeId = useRef(null);
     const endBasenodeId = useRef(null);
 
-    // 기본 색깔 정보 넣기
+    // Circle 을 hover 했을 경우
     const onCircleTouchOrOverAction = useMemo(() => {
         return (id) => {
-            let all_to = roadMapDegreeDetail && roadMapDegreeDetail.filter((data) => data?.from_basenode_id == id);
+            let all_to = roadMapDegreeDetail && roadMapDegreeDetail.filter((data) => data?.from_basenode_id === id);
 
             const findNextNodePaint = (color) => {
                 all_to && all_to.forEach((data) => {
@@ -84,6 +84,31 @@ const RoadMapDetail = () => {
                 onMouseOut: (e) => {
                     findNextNodePaint("current");
                     document.getElementById(`circle_${id}`).style.fill = baseNodeCoord.current[id]["currentColor"];
+                    e.preventDefault();
+                },
+                // onTouchStart: () => {
+                //     findNextNodePaint("yellow");
+                //     document.getElementById(`circle_${id}`).style.fill = "red";
+                // },
+                // onTouchEnd: () => {
+                //     findNextNodePaint("#FF6F91");
+                //     document.getElementById(`circle_${id}`).style.fill = "#FF6F91";
+                // }
+            }
+        }
+    }, [roadMapDegreeDetail]);
+
+    // Weight 를 hover 했을 경우
+    const onWeightTouchOrOverAction = useMemo(() => {
+
+        return (id) => {
+            return {
+                onMouseOver: (e) => {
+                    document.getElementById(`degree_${id}`).style.stroke = "red";
+                    e.preventDefault();
+                },
+                onMouseOut: (e) => {
+                    document.getElementById(`degree_${id}`).style.stroke = "grey";
                     e.preventDefault();
                 },
                 // onTouchStart: () => {
@@ -380,7 +405,8 @@ const RoadMapDetail = () => {
                             borderRadius: "60%",
                             zIndex: 999,
                             padding: "5px",
-                        }}>
+                        }}
+                        {...onWeightTouchOrOverAction(val.id)}>
                             {val.weight}
                         </DegreeWeightDiv>
                         <svg key={val.id} style={{
