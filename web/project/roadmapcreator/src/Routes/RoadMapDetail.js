@@ -78,7 +78,7 @@ const RoadMapDetail = () => {
             return {
                 onMouseOver: (e) => {
                     findNextNodePaint("yellow");
-                    document.getElementById(`circle_${id}`).style.fill = "red";
+                    document.getElementById(`circle_${id}`).style.fill = "#61ffc8";
                     e.preventDefault();
                 },
                 onMouseOut: (e) => {
