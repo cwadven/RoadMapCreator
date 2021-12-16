@@ -11,5 +11,5 @@ jobs:
     steps:
     - name: Deploy with React Build
       run: |
-        sudo git pull origin master
+        cd /var/www/roadmap/ && sudo git pull origin master
         sudo sh /var/www/roadmap/deploy.sh
