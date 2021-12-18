@@ -49,6 +49,7 @@ const RADIUS = 50;
 const NODE_MARGIN = RADIUS * 2.5;
 const DEGREE_PADDING = RADIUS + 10;
 const DEFAULT_COLOR = "#FF6F91";
+const DEGREE_DEFAULT_COLOR = "grey";
 
 const RoadMapDetail = () => {
     const [height, setHeight] = useState(window.innerHeight + RADIUS);
@@ -56,6 +57,7 @@ const RoadMapDetail = () => {
     const [roadMapDetail, setRoadMapDetailSet] = useState(null);
     const [roadMapDegreeDetail, setRoadMapDegreeDetailSet] = useState(null);
     const baseNodeCoord = useRef({});
+    const degreeInfo = useRef({});
 
     const startBasenodeId = useRef(null);
     const endBasenodeId = useRef(null);
@@ -86,39 +88,41 @@ const RoadMapDetail = () => {
                     document.getElementById(`circle_${id}`).style.fill = baseNodeCoord.current[id]["currentColor"];
                     e.preventDefault();
                 },
-                // onTouchStart: () => {
-                //     findNextNodePaint("yellow");
-                //     document.getElementById(`circle_${id}`).style.fill = "red";
-                // },
-                // onTouchEnd: () => {
-                //     findNextNodePaint("#FF6F91");
-                //     document.getElementById(`circle_${id}`).style.fill = "#FF6F91";
-                // }
+                onTouchStart: (e) => {
+                    findNextNodePaint("yellow");
+                    document.getElementById(`circle_${id}`).style.fill = "red";
+                    e.preventDefault();
+                },
+                onTouchEnd: (e) => {
+                    findNextNodePaint("current");
+                    document.getElementById(`circle_${id}`).style.fill = baseNodeCoord.current[id]["currentColor"];
+                    e.preventDefault();
+                }
             }
         }
     }, [roadMapDegreeDetail]);
 
     // Weight 를 hover 했을 경우
     const onWeightTouchOrOverAction = useMemo(() => {
-
         return (id) => {
+
             return {
                 onMouseOver: (e) => {
                     document.getElementById(`degree_${id}`).style.stroke = "red";
                     e.preventDefault();
                 },
                 onMouseOut: (e) => {
-                    document.getElementById(`degree_${id}`).style.stroke = "grey";
+                    document.getElementById(`degree_${id}`).style.stroke = degreeInfo.current[id]["currentColor"];
                     e.preventDefault();
                 },
-                // onTouchStart: () => {
-                //     findNextNodePaint("yellow");
-                //     document.getElementById(`circle_${id}`).style.fill = "red";
-                // },
-                // onTouchEnd: () => {
-                //     findNextNodePaint("#FF6F91");
-                //     document.getElementById(`circle_${id}`).style.fill = "#FF6F91";
-                // }
+                onTouchStart: (e) => {
+                    document.getElementById(`degree_${id}`).style.stroke = "red";
+                    e.preventDefault();
+                },
+                onTouchEnd: (e) => {
+                    document.getElementById(`degree_${id}`).style.stroke = degreeInfo.current[id]["currentColor"];
+                    e.preventDefault();
+                }
             }
         }
     }, [roadMapDegreeDetail]);
@@ -136,15 +140,16 @@ const RoadMapDetail = () => {
     }
 
     const setAllPolyLineDefaultColor = () => {
-        document.querySelectorAll('polyline').forEach((polyline) => {
-            console.log(polyline)
-            polyline.style.stroke = 'grey';
+        Object.keys(degreeInfo.current).forEach((degreeId) => {
+            document.querySelector(`#degree_${degreeId}`).style.stroke = degreeInfo.current[degreeId]["defaultColor"];
+            degreeInfo.current[degreeId]["currentColor"] = degreeInfo.current[degreeId]["defaultColor"]
         });
     }
 
     const setAllCircleDefaultColor = () => {
         Object.keys(baseNodeCoord.current).forEach((baseNodeId) => {
             document.querySelector(`#circle_${baseNodeId}`).style.fill = baseNodeCoord.current[baseNodeId]["defaultColor"];
+            baseNodeCoord.current[baseNodeId]["currentColor"] = baseNodeCoord.current[baseNodeId]["defaultColor"];
         });
     }
 
@@ -164,6 +169,7 @@ const RoadMapDetail = () => {
     const setShortestPathPolyLineColor = (data) => {
         data?.basenode_degree_shortest_connection_set.forEach((degree) => {
             document.querySelector(`#degree_${degree.id}`).style.stroke = "red";
+            degreeInfo.current[degree.id]["currentColor"] = "red";
         });
     }
 
@@ -243,6 +249,16 @@ const RoadMapDetail = () => {
 
                 return {...val, position, currentColor: val.hex_color_code ? val.hex_color_code : DEFAULT_COLOR}
             })
+
+            // 선 색깔 초기화
+            data.degree_set.forEach(val => {
+                degreeInfo.current[val.id] = {
+                    defaultColor: DEGREE_DEFAULT_COLOR,
+                    currentColor: DEGREE_DEFAULT_COLOR,
+                };
+            })
+
+            console.log(data.degree_set)
 
             setRoadMapDetailSet(data.roadmap);
             setRoadMapDegreeDetailSet(data.degree_set);
