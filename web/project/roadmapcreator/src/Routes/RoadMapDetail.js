@@ -42,9 +42,8 @@ const DegreeDiv = styled.div`
 const DegreePolyLine = styled.polyline`
 `;
 
-
-const HEADER_PX = 150;
-const LEVEL_OFFSET_PX = 50 + HEADER_PX * 2;
+const HEADER_PX = 175;
+const LEVEL_OFFSET_PX = 30 + HEADER_PX * 1;
 const RADIUS = 50;
 const NODE_MARGIN = RADIUS * 2.5;
 const DEGREE_PADDING = RADIUS + 10;
@@ -291,7 +290,7 @@ const RoadMapDetail = () => {
                             position: "absolute",
                             top: "0",
                             left: "0",
-                            fontWeight: "bold"
+                            fontStyle: "italic",
                         }}>
                             {val.id}
                         </div>
@@ -417,12 +416,13 @@ const RoadMapDetail = () => {
                             top: "50%",
                             left: "50%",
                             transform: "translate(-50%, -50%)",
-                            background: "white",
+                            background: "transparent",
                             borderRadius: "60%",
                             zIndex: 999,
                             padding: "5px",
+                            fontWeight: "bold"
                         }}
-                        {...onWeightTouchOrOverAction(val.id)}>
+                                         {...onWeightTouchOrOverAction(val.id)}>
                             {val.weight}
                         </DegreeWeightDiv>
                         <svg key={val.id} style={{
@@ -475,13 +475,16 @@ const RoadMapDetail = () => {
             <div style={{background: "white", padding: "10px"}}>
                 <div style={{marginBottom: "10px"}}>
                     시작 ID: <input type="number" name="startBasenodeId" ref={startBasenodeId}/>
+                </div>
+                <div style={{marginBottom: "10px"}}>
                     도착 ID: <input type="number" name="endBasenodeId" ref={endBasenodeId}/>
                 </div>
                 <div>
                     <button onClick={findShortestPath}>
-                        최단 거리 선택하기
+                        최단 거리 확인하기
                     </button>
-                    {shortestWeight !== null && shortestWeight + "걸림"}
+                    {shortestWeight !== null &&
+                    <span style={{marginLeft: "10px", fontWeight: "bold"}}>{`최소 ${shortestWeight} 걸림`}</span>}
                 </div>
             </div>
         </div>
