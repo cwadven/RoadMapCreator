@@ -332,10 +332,13 @@ class ShortestDirectionAPI(APIView):
         for basenode_degree_filter in basenode_degree_filter_set:
             q = q | Q(from_basenode_id=basenode_degree_filter[0], to_basenode_id=basenode_degree_filter[1])
 
-        basenode_degree_shortest_connection_set = BaseNodeDegree.objects.filter(q).values(
-            "id",
-            "weight"
-        )
+        basenode_degree_shortest_connection_set = []
+
+        if basenode_degree_filter_set:
+            basenode_degree_shortest_connection_set = BaseNodeDegree.objects.filter(q).values(
+                "id",
+                "weight"
+            )
 
         return Response(data={
             "success": {
