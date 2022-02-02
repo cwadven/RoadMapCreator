@@ -2,9 +2,13 @@ import React, {useEffect, useState} from 'react';
 import {roadMap} from "api";
 import styled from 'styled-components';
 import {Link} from "react-router-dom";
+import CustomButton from "../Component/CustomButton";
 
 const RoadMapItem = styled.div`
-    margin-top: 20px;
+    margin: 30px 35px;
+    border: 1px solid;
+    padding: 20px 30px;
+    border-radius: 5px;
 `;
 
 const Home = () => {
@@ -16,7 +20,7 @@ const Home = () => {
             return roadmap_set
         }
 
-        fetchData().then((roadmap_set)=>{
+        fetchData().then((roadmap_set) => {
             setRoadMapSet(roadmap_set);
         });
 
@@ -27,13 +31,21 @@ const Home = () => {
             {roadMapSet.length ? roadMapSet.map((data) => {
                 return (
                     <RoadMapItem key={data.id}>
-                        <div>순번: {data.id}</div>
-                        <div>작성자: {data.username}</div>
-                        <div>제목: {data.title}</div>
-                        <div>설명: {data.description}</div>
-                        <div>이미지: {data.image}</div>
-                        <div>생성일: {new Date(data.created_at).toLocaleString()}</div>
-                        <Link to={`/roadmap/${data.id}`}>자세히보기🎈</Link>
+                        <div style={{display: "flex", justifyContent: "space-between"}}>
+                            <div>ID: {data.id}</div>
+                            <div>작성자: {data.username}</div>
+                        </div>
+                        {data.image ? <div>이미지: {data.image}</div> : ""}
+                        <div style={{marginTop: "10px"}}>
+                            <h3>{data.title}</h3>
+                            <div style={{marginTop: "5px"}}>{data.description}</div>
+                        </div>
+                        <div style={{marginTop: "10px", display: "flex", justifyContent: "space-between", alignItems: "center"}}>
+                            <Link to={`/roadmap/${data.id}`}>
+                                <CustomButton value={"Detail"}/>
+                            </Link>
+                            <div style={{marginTop: "10px", textAlign: "right"}}>{new Date(data.created_at).toLocaleString()}</div>
+                        </div>
                     </RoadMapItem>
                 )
             }) : null}
