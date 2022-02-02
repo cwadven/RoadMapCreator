@@ -430,12 +430,12 @@ const RoadMapDetail = () => {
                             transform: "translate(-50%, -50%)",
                             background: "transparent",
                             borderRadius: "60%",
-                            zIndex: 999,
+                            zIndex: 998,
                             padding: "5px",
                             fontWeight: "bold"
                         }}
                                          {...onWeightTouchOrOverAction(val.id)}>
-                            {val.weight}
+                            {val.weight}₩
                         </DegreeWeightDiv>
                         <svg key={val.id} style={{
                             // 잘려서 보이는 현상으로 + 5 정도 추가
@@ -484,7 +484,7 @@ const RoadMapDetail = () => {
                     </NodeTransparentDiv>
                 )
             })}
-            <div style={{position: "sticky", top: 50, background: "#f4f4f4", padding: "10px", textAlign: "center", zIndex: 1000}}>
+            <div style={{position: "sticky", top: 50, background: "#f4f4f4", padding: "10px", textAlign: "center", zIndex: 999}}>
                 <div style={{marginBottom: "10px"}}>
                     <input style={{padding: "10px"}} type="number" name="startBasenodeId" placeholder={"시작 ID"}
                            ref={startBasenodeId} onKeyPress={(e) => {
