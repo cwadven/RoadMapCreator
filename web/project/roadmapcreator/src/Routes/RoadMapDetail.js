@@ -2,6 +2,7 @@ import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {roadMap} from "api";
 import styled from 'styled-components';
 import {useParams} from "react-router-dom";
+import CustomButton from "../Component/CustomButton";
 
 
 const NodeSvg = styled.svg`
@@ -42,7 +43,7 @@ const DegreeDiv = styled.div`
 const DegreePolyLine = styled.polyline`
 `;
 
-const HEADER_PX = 175;
+const HEADER_PX = 215;
 const LEVEL_OFFSET_PX = 30 + HEADER_PX * 1;
 const RADIUS = 50;
 const NODE_MARGIN = RADIUS * 2.5;
@@ -175,6 +176,7 @@ const RoadMapDetail = () => {
     const findShortestPath = async () => {
         setAllCircleDefaultColor();
         setAllPolyLineDefaultColor();
+        let message = "";
 
         if (startBasenodeId.current.value && endBasenodeId.current.value) {
             const queryParams = {
@@ -198,7 +200,17 @@ const RoadMapDetail = () => {
             setShortestPathCircleColor(success);
             setShortestPathPolyLineColor(success);
         } else {
-            alert("시작ID, 도착ID 를 입력하세요!");
+            if (!endBasenodeId.current.value) {
+                message = "도착 ID " + message;
+                endBasenodeId.current.focus();
+            }
+            if (!startBasenodeId.current.value) {
+                message = "시작 ID " + message;
+                startBasenodeId.current.focus();
+            }
+            message = message + "를 입력 하세요!";
+            setShortestWeight(null);
+            alert(message);
         }
     }
 
@@ -472,19 +484,29 @@ const RoadMapDetail = () => {
                     </NodeTransparentDiv>
                 )
             })}
-            <div style={{background: "white", padding: "10px"}}>
+            <div style={{position: "sticky", top: 50, background: "#f4f4f4", padding: "10px", textAlign: "center"}}>
                 <div style={{marginBottom: "10px"}}>
-                    시작 ID: <input type="number" name="startBasenodeId" ref={startBasenodeId}/>
+                    <input style={{padding: "10px"}} type="number" name="startBasenodeId" placeholder={"시작 ID"}
+                           ref={startBasenodeId} onKeyPress={(e) => {
+                        if (e.key === "Enter") {
+                            findShortestPath();
+                        }
+                    }}/>
                 </div>
                 <div style={{marginBottom: "10px"}}>
-                    도착 ID: <input type="number" name="endBasenodeId" ref={endBasenodeId}/>
+                    <input style={{padding: "10px"}} type="number" name="endBasenodeId" placeholder={"도착 ID"}
+                           ref={endBasenodeId} onKeyPress={(e) => {
+                        if (e.key === "Enter") {
+                            findShortestPath();
+                        }
+                    }}/>
                 </div>
                 <div>
-                    <button onClick={findShortestPath}>
-                        최단 거리 확인하기
-                    </button>
+                    <CustomButton value={"최단 거리 확인하기"} onClick={findShortestPath}/>
+                </div>
+                <div style={{marginTop: "10px"}}>
                     {shortestWeight !== null &&
-                    <span style={{marginLeft: "10px", fontWeight: "bold"}}>{`최소 ${shortestWeight} 걸림`}</span>}
+                        <span style={{marginLeft: "10px", fontWeight: "bold"}}>{`최소 ${shortestWeight} 걸림`}</span>}
                 </div>
             </div>
         </div>
