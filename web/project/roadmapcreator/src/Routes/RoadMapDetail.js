@@ -69,7 +69,7 @@ const RoadMapDetail = () => {
 
             const findNextNodePaint = (color) => {
                 all_to && all_to.forEach((data) => {
-                    if (color == "current") {
+                    if (color === "current") {
                         document.getElementById(`circle_${data.to_basenode_id}`).style.fill = baseNodeCoord.current[data.to_basenode_id]["currentColor"];
                     } else {
                         document.getElementById(`circle_${data.to_basenode_id}`).style.fill = color;
