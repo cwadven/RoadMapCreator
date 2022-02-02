@@ -435,7 +435,7 @@ const RoadMapDetail = () => {
                             fontWeight: "bold"
                         }}
                                          {...onWeightTouchOrOverAction(val.id)}>
-                            {val.weight}₩
+                            {val.weight}
                         </DegreeWeightDiv>
                         <svg key={val.id} style={{
                             // 잘려서 보이는 현상으로 + 5 정도 추가
