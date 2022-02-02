@@ -3,6 +3,9 @@ import reset from 'styled-reset';
 
 const GlobalStyles = createGlobalStyle`
     ${reset};
+    h3{
+        font-size: 22px;
+    }
     a{
         text-decoration: none;
         color: inherit;
