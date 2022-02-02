@@ -484,7 +484,7 @@ const RoadMapDetail = () => {
                     </NodeTransparentDiv>
                 )
             })}
-            <div style={{position: "sticky", top: 50, background: "#f4f4f4", padding: "10px", textAlign: "center"}}>
+            <div style={{position: "sticky", top: 50, background: "#f4f4f4", padding: "10px", textAlign: "center", zIndex: 1000}}>
                 <div style={{marginBottom: "10px"}}>
                     <input style={{padding: "10px"}} type="number" name="startBasenodeId" placeholder={"시작 ID"}
                            ref={startBasenodeId} onKeyPress={(e) => {
