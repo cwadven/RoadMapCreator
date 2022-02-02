@@ -35,10 +35,10 @@ const Home = () => {
                             <div>ID: {data.id}</div>
                             <div>작성자: {data.username}</div>
                         </div>
-                        {data.image ? <div>이미지: {data.image}</div> : ""}
+                        {data.image ? <div style={{overflowWrap: "break-word"}}>이미지: {data.image}</div> : ""}
                         <div style={{marginTop: "10px"}}>
-                            <h3>{data.title}</h3>
-                            <div style={{marginTop: "5px"}}>{data.description}</div>
+                            <h3 style={{overflowWrap: "break-word"}}>{data.title}</h3>
+                            <div style={{marginTop: "5px", overflowWrap: "break-word"}}>{data.description}</div>
                         </div>
                         <div style={{marginTop: "10px", display: "flex", justifyContent: "space-between", alignItems: "center"}}>
                             <Link to={`/roadmap/${data.id}`}>
