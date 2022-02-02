@@ -16,7 +16,7 @@ const Button = styled.button`
 
 const CustomButton = (props) => {
     return (
-        <Button>
+        <Button {...props}>
             {props.value}
         </Button>
     );
