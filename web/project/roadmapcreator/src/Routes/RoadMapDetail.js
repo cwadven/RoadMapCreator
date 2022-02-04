@@ -43,10 +43,14 @@ const DegreeDiv = styled.div`
 const DegreePolyLine = styled.polyline`
 `;
 
-const HEADER_PX = 215;
+const HEADER_PX = 240;
 const LEVEL_OFFSET_PX = 30 + HEADER_PX * 1;
-const RADIUS = 50;
-const NODE_MARGIN = RADIUS * 2.5;
+// 반지름
+const RADIUS = 30;
+// Node 끼리 떨어지는 정도
+const NODE_MARGIN = RADIUS * 3;
+// Level 마다 떨어지는 Height 조정
+const LEVEL_MARGIN = 50;
 const DEGREE_PADDING = RADIUS + 10;
 const DEFAULT_COLOR = "#FF6F91";
 const DEGREE_DEFAULT_COLOR = "grey";
@@ -231,6 +235,7 @@ const RoadMapDetail = () => {
                 let topEnd;
                 let randomTopPosition;
                 let isIntersect = true;
+                let nodeMarginPlus = 0;
 
                 // Node 가 겹치지 않도록 떨어지도록 설정
                 while (isIntersect) {
@@ -238,14 +243,15 @@ const RoadMapDetail = () => {
                     leftEnd = document.documentElement.clientWidth - 100;
                     randomLeftPosition = randRange(leftStart, leftEnd);
 
-                    topStart = val.display_level * 200;
-                    topEnd = (val.display_level + 1) * 200;
+                    topStart = val.display_level * LEVEL_MARGIN;
+                    topEnd = (val.display_level + 1) * LEVEL_MARGIN;
                     randomTopPosition = randRange(topStart + offset + HEADER_PX, topEnd + offset + HEADER_PX);
 
                     isIntersect = Object.values(baseNodeCoord.current).some((obj) => {
-                        if (Math.sqrt(Math.pow(obj.position.left - randomLeftPosition, 2) + Math.pow(obj.position.top - randomTopPosition, 2)) > NODE_MARGIN) {
+                        if (Math.sqrt(Math.pow(obj.position.left - randomLeftPosition, 2) + Math.pow(obj.position.top - randomTopPosition, 2)) > NODE_MARGIN - nodeMarginPlus) {
                             return false
                         }
+                        nodeMarginPlus += 1;
                         return true
                     })
                 }
@@ -269,8 +275,6 @@ const RoadMapDetail = () => {
                 };
             })
 
-            console.log(data.degree_set)
-
             setRoadMapDetailSet(data.roadmap);
             setRoadMapDegreeDetailSet(data.degree_set);
 
@@ -293,6 +297,7 @@ const RoadMapDetail = () => {
                             position: "absolute",
                             top: "50%",
                             left: "50%",
+                            fontSize: "12px",
                             transform: "translate(-50%, -50%)",
                             width: "fit-content",
                         }}>
@@ -379,7 +384,7 @@ const RoadMapDetail = () => {
                 let x2;
                 let y2;
 
-                if (baseNodeCoord.current[val.from_basenode_id]["position"].left > baseNodeCoord.current[val.to_basenode_id]["position"].left && baseNodeCoord.current[val.to_basenode_id]["position"].top > baseNodeCoord.current[val.from_basenode_id]["position"].top) {
+                if (baseNodeCoord.current[val.from_basenode_id]["position"].left > baseNodeCoord.current[val.to_basenode_id]["position"].left && baseNodeCoord.current[val.to_basenode_id]["position"].top >= baseNodeCoord.current[val.from_basenode_id]["position"].top) {
                     // 화살표 방향 : 위 -> 아래 / 오른쪽 -> 왼쪽
                     x1 = width - forCos;
                     y1 = 0 + forSin;
@@ -388,7 +393,7 @@ const RoadMapDetail = () => {
 
                     // height += forSin;
                     // width += forCos;
-                } else if (baseNodeCoord.current[val.from_basenode_id]["position"].left < baseNodeCoord.current[val.to_basenode_id]["position"].left && baseNodeCoord.current[val.to_basenode_id]["position"].top < baseNodeCoord.current[val.from_basenode_id]["position"].top) {
+                } else if (baseNodeCoord.current[val.from_basenode_id]["position"].left < baseNodeCoord.current[val.to_basenode_id]["position"].left && baseNodeCoord.current[val.to_basenode_id]["position"].top <= baseNodeCoord.current[val.from_basenode_id]["position"].top) {
                     // 화살표 방향 : 아래 -> 위 / 왼쪽 -> 오른쪽
                     x1 = 0 + forCos;
                     y1 = height - forSin;
@@ -397,7 +402,7 @@ const RoadMapDetail = () => {
 
                     // height += forSin;
                     // width += forCos;
-                } else if (baseNodeCoord.current[val.from_basenode_id]["position"].left < baseNodeCoord.current[val.to_basenode_id]["position"].left && baseNodeCoord.current[val.to_basenode_id]["position"].top > baseNodeCoord.current[val.from_basenode_id]["position"].top) {
+                } else if (baseNodeCoord.current[val.from_basenode_id]["position"].left < baseNodeCoord.current[val.to_basenode_id]["position"].left && baseNodeCoord.current[val.to_basenode_id]["position"].top >= baseNodeCoord.current[val.from_basenode_id]["position"].top) {
                     // 화살표 방향 : 위 -> 아래 / 왼쪽 -> 오른쪽
                     x1 = 0 + forCos;
                     y1 = 0 + forSin;
@@ -406,7 +411,7 @@ const RoadMapDetail = () => {
 
                     // height += forSin;
                     // width += forCos;
-                } else if (baseNodeCoord.current[val.from_basenode_id]["position"].left > baseNodeCoord.current[val.to_basenode_id]["position"].left && baseNodeCoord.current[val.to_basenode_id]["position"].top < baseNodeCoord.current[val.from_basenode_id]["position"].top) {
+                } else if (baseNodeCoord.current[val.from_basenode_id]["position"].left > baseNodeCoord.current[val.to_basenode_id]["position"].left && baseNodeCoord.current[val.to_basenode_id]["position"].top <= baseNodeCoord.current[val.from_basenode_id]["position"].top) {
                     // 화살표 방향 : 아래 -> 위 / 오른쪽 -> 왼쪽
                     x1 = width - forCos;
                     y1 = height - forSin;
