@@ -249,6 +249,7 @@ const RoadMapDetail = () => {
             });
 
             if (!success) {
+                setShortestWeight(null);
                 return;
             }
 
