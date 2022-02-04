@@ -117,45 +117,29 @@ const RoadMapDetail = () => {
                 onMouseUp: (e) => {
                     e.preventDefault();
                     if (!!!beforeSelectObject.current) {
-                        if (startBasenodeId.current.valueAsNumber !== id) {
-                            endBasenodeId.current.style.borderColor = "green";
-                            startBasenodeId.current.style.borderColor = "";
-                            startBasenodeId.current.value = id;
-                            beforeSelectObject.current = 1;
-                        } else {
-                            startBasenodeId.current.style.borderColor = "red";
-                        }
+                        endBasenodeId.current.style.borderColor = "green";
+                        startBasenodeId.current.style.borderColor = "";
+                        startBasenodeId.current.value = id;
+                        beforeSelectObject.current = 1;
                     } else {
-                        if (endBasenodeId.current.valueAsNumber !== id) {
-                            startBasenodeId.current.style.borderColor = "green";
-                            endBasenodeId.current.style.borderColor = "";
-                            endBasenodeId.current.value = id;
-                            beforeSelectObject.current = 0;
-                        } else {
-                            endBasenodeId.current.style.borderColor = "red";
-                        }
+                        startBasenodeId.current.style.borderColor = "green";
+                        endBasenodeId.current.style.borderColor = "";
+                        endBasenodeId.current.value = id;
+                        beforeSelectObject.current = 0;
                     }
                 },
                 onTouchEndCapture: (e) => {
                     e.preventDefault();
                     if (!!!beforeSelectObject.current) {
-                        if (startBasenodeId.current.valueAsNumber !== id) {
-                            endBasenodeId.current.style.borderColor = "green";
-                            startBasenodeId.current.style.borderColor = "";
-                            startBasenodeId.current.value = id;
-                            beforeSelectObject.current = 1;
-                        } else {
-                            startBasenodeId.current.style.borderColor = "red";
-                        }
+                        endBasenodeId.current.style.borderColor = "green";
+                        startBasenodeId.current.style.borderColor = "";
+                        startBasenodeId.current.value = id;
+                        beforeSelectObject.current = 1;
                     } else {
-                        if (endBasenodeId.current.valueAsNumber !== id) {
-                            startBasenodeId.current.style.borderColor = "green";
-                            endBasenodeId.current.style.borderColor = "";
-                            endBasenodeId.current.value = id;
-                            beforeSelectObject.current = 0;
-                        } else {
-                            endBasenodeId.current.style.borderColor = "red";
-                        }
+                        startBasenodeId.current.style.borderColor = "green";
+                        endBasenodeId.current.style.borderColor = "";
+                        endBasenodeId.current.value = id;
+                        beforeSelectObject.current = 0;
                     }
                 }
             }
