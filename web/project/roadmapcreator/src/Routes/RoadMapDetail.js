@@ -21,13 +21,13 @@ const NodeDiv = styled.div`
     &:hover ${NodeCircle}{
         fill: red;
     }
-`
+`;
 
 const NodeTransparentDiv = styled.div`
     &:hover ${NodeCircle}{
         fill: red;
     }
-`
+`;
 
 const DegreeWeightDiv = styled.div`
 `;
@@ -38,7 +38,7 @@ const DegreeDiv = styled.div`
     // &:hover ${DegreeWeightDiv}{
     //     color: red;
     // }
-`
+`;
 
 const DegreePolyLine = styled.polyline`
 `;
@@ -68,7 +68,10 @@ const RoadMapDetail = () => {
     const startBasenodeId = useRef(null);
     const endBasenodeId = useRef(null);
 
-    const beforeSelectObject = useRef(null);
+    // Node 클릭 시, input 값 넣기 제어용
+    const startOrEndInputPointer = useRef(null);
+    // input 클릭 후, Node 클릭 시, input 값 넣기 제어용
+    const inputFillPointer = useRef("");
 
     // Circle 을 hover 했을 경우
     const onCircleTouchOrOverAction = useMemo(() => {
@@ -106,44 +109,53 @@ const RoadMapDetail = () => {
                     document.getElementById(`circle_${id}`).style.fill = baseNodeCoord.current[id]["currentColor"];
                     e.preventDefault();
                 }
-            }
-        }
+            };
+        };
     }, [roadMapDegreeDetail]);
 
     // Circle 을 hover 했을 경우
     const onCircleClickThenOutAction = useMemo(() => {
+
+        const setNextInputValue = (id) => {
+            if (inputFillPointer.current === "start") {
+                endBasenodeId.current.style.borderColor = "green";
+                startBasenodeId.current.style.borderColor = "";
+                startBasenodeId.current.value = id;
+                startOrEndInputPointer.current = 1;
+                inputFillPointer.current = "";
+            } else if (inputFillPointer.current === "end") {
+                startBasenodeId.current.style.borderColor = "green";
+                endBasenodeId.current.style.borderColor = "";
+                endBasenodeId.current.value = id;
+                startOrEndInputPointer.current = 0;
+                inputFillPointer.current = "";
+            } else {
+                if (!!!startOrEndInputPointer.current) {
+                    endBasenodeId.current.style.borderColor = "green";
+                    startBasenodeId.current.style.borderColor = "";
+                    startBasenodeId.current.value = id;
+                    startOrEndInputPointer.current = 1;
+                } else {
+                    startBasenodeId.current.style.borderColor = "green";
+                    endBasenodeId.current.style.borderColor = "";
+                    endBasenodeId.current.value = id;
+                    startOrEndInputPointer.current = 0;
+                }
+            }
+        };
+
         return (id) => {
             return {
                 onMouseUp: (e) => {
                     e.preventDefault();
-                    if (!!!beforeSelectObject.current) {
-                        endBasenodeId.current.style.borderColor = "green";
-                        startBasenodeId.current.style.borderColor = "";
-                        startBasenodeId.current.value = id;
-                        beforeSelectObject.current = 1;
-                    } else {
-                        startBasenodeId.current.style.borderColor = "green";
-                        endBasenodeId.current.style.borderColor = "";
-                        endBasenodeId.current.value = id;
-                        beforeSelectObject.current = 0;
-                    }
+                    setNextInputValue(id);
                 },
                 onTouchEndCapture: (e) => {
                     e.preventDefault();
-                    if (!!!beforeSelectObject.current) {
-                        endBasenodeId.current.style.borderColor = "green";
-                        startBasenodeId.current.style.borderColor = "";
-                        startBasenodeId.current.value = id;
-                        beforeSelectObject.current = 1;
-                    } else {
-                        startBasenodeId.current.style.borderColor = "green";
-                        endBasenodeId.current.style.borderColor = "";
-                        endBasenodeId.current.value = id;
-                        beforeSelectObject.current = 0;
-                    }
+                    setNextInputValue(id);
                 }
-            }
-        }
+            };
+        };
     }, [roadMapDegreeDetail]);
 
     // Weight 를 hover 했을 경우
@@ -167,8 +179,8 @@ const RoadMapDetail = () => {
                     document.getElementById(`degree_${id}`).style.stroke = degreeInfo.current[id]["currentColor"];
                     e.preventDefault();
                 }
-            }
-        }
+            };
+        };
     }, [roadMapDegreeDetail]);
 
     const [shortestWeight, setShortestWeight] = useState(null);
@@ -177,25 +189,25 @@ const RoadMapDetail = () => {
 
     const randRange = (min, max) => {
         return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
+    };
 
     const calcAngle = (x, y) => {
         return Math.atan2(y, x) * 180 / Math.PI;
-    }
+    };
 
     const setAllPolyLineDefaultColor = () => {
         Object.keys(degreeInfo.current).forEach((degreeId) => {
             document.querySelector(`#degree_${degreeId}`).style.stroke = degreeInfo.current[degreeId]["defaultColor"];
-            degreeInfo.current[degreeId]["currentColor"] = degreeInfo.current[degreeId]["defaultColor"]
+            degreeInfo.current[degreeId]["currentColor"] = degreeInfo.current[degreeId]["defaultColor"];
         });
-    }
+    };
 
     const setAllCircleDefaultColor = () => {
         Object.keys(baseNodeCoord.current).forEach((baseNodeId) => {
             document.querySelector(`#circle_${baseNodeId}`).style.fill = baseNodeCoord.current[baseNodeId]["defaultColor"];
             baseNodeCoord.current[baseNodeId]["currentColor"] = baseNodeCoord.current[baseNodeId]["defaultColor"];
         });
-    }
+    };
 
     const setShortestPathCircleColor = (data) => {
         data?.basenode_id_shortest_path.forEach((basenode_id) => {
@@ -208,14 +220,14 @@ const RoadMapDetail = () => {
 
         document.querySelector(`#circle_${endBasenodeId.current.value}`).style.fill = EndStartColor;
         baseNodeCoord.current[endBasenodeId.current.value]["currentColor"] = EndStartColor;
-    }
+    };
 
     const setShortestPathPolyLineColor = (data) => {
         data?.basenode_degree_shortest_connection_set.forEach((degree) => {
             document.querySelector(`#degree_${degree.id}`).style.stroke = "red";
             degreeInfo.current[degree.id]["currentColor"] = "red";
         });
-    }
+    };
 
     const findShortestPath = async () => {
         setAllCircleDefaultColor();
@@ -226,7 +238,7 @@ const RoadMapDetail = () => {
             const queryParams = {
                 start_basenode_id: startBasenodeId.current.value,
                 end_basenode_id: endBasenodeId.current.value,
-            }
+            };
 
             const {data: {success}} = await roadMap.findShortestPath(
                 params.roadMapId,
@@ -256,13 +268,13 @@ const RoadMapDetail = () => {
             setShortestWeight(null);
             alert(message);
         }
-    }
+    };
 
     useEffect(() => {
         const fetchData = async () => {
             const {data: {success}} = await roadMap.roadMapDetail(params.roadMapId);
-            return success
-        }
+            return success;
+        };
 
         fetchData().then((data) => {
             data.roadmap.basenode_set = data.roadmap.basenode_set.map(val => {
@@ -289,14 +301,14 @@ const RoadMapDetail = () => {
 
                     isIntersect = Object.values(baseNodeCoord.current).some((obj) => {
                         if (Math.sqrt(Math.pow(obj.position.left - randomLeftPosition, 2) + Math.pow(obj.position.top - randomTopPosition, 2)) > NODE_MARGIN - nodeMarginPlus) {
-                            return false
+                            return false;
                         }
                         nodeMarginPlus += 1;
-                        return true
-                    })
+                        return true;
+                    });
                 }
 
-                const position = {left: randomLeftPosition, top: randomTopPosition}
+                const position = {left: randomLeftPosition, top: randomTopPosition};
 
                 baseNodeCoord.current[val.id] = {
                     position,
@@ -304,8 +316,8 @@ const RoadMapDetail = () => {
                     currentColor: val.hex_color_code ? val.hex_color_code : DEFAULT_COLOR,
                 };
 
-                return {...val, position, currentColor: val.hex_color_code ? val.hex_color_code : DEFAULT_COLOR}
-            })
+                return {...val, position, currentColor: val.hex_color_code ? val.hex_color_code : DEFAULT_COLOR};
+            });
 
             // 선 색깔 초기화
             data.degree_set.forEach(val => {
@@ -313,15 +325,15 @@ const RoadMapDetail = () => {
                     defaultColor: DEGREE_DEFAULT_COLOR,
                     currentColor: DEGREE_DEFAULT_COLOR,
                 };
-            })
+            });
 
             setRoadMapDetailSet(data.roadmap);
             setRoadMapDegreeDetailSet(data.degree_set);
 
             // 세팅하기 degree_set 을 전부 돌면서
-        })
+        });
 
-    }, [])
+    }, []);
 
     return (
         <div style={{height: height}}>
@@ -359,7 +371,7 @@ const RoadMapDetail = () => {
                                         fill={val.hex_color_code ? val.hex_color_code : DEFAULT_COLOR}/>
                         </NodeSvg>
                     </NodeDiv>
-                )
+                );
             })}
             {/* 선 */}
             {roadMapDegreeDetail && roadMapDegreeDetail.map((val) => {
@@ -504,7 +516,7 @@ const RoadMapDetail = () => {
                             />
                         </svg>
                     </DegreeDiv>
-                )
+                );
             })}
             {/* 안보이는 것 노드 똑같이 */}
             {roadMapDetail && roadMapDetail.basenode_set.map(val => {
@@ -528,35 +540,72 @@ const RoadMapDetail = () => {
                             />
                         </NodeSvg>
                     </NodeTransparentDiv>
-                )
+                );
             })}
-            <div style={{position: "sticky", top: 50, background: "#f4f4f4", padding: "10px", textAlign: "center", zIndex: 999}}>
+            <div style={{
+                position: "sticky",
+                top: 50,
+                background: "#f4f4f4",
+                padding: "10px",
+                textAlign: "center",
+                zIndex: 999
+            }}>
                 <div style={{marginBottom: "10px"}}>
-                    <input style={{padding: "10px"}} type="number" name="startBasenodeId" placeholder={"시작 ID"}
-                           ref={startBasenodeId} onKeyPress={(e) => {
-                        if (e.key === "Enter") {
-                            findShortestPath();
-                        }
-                    }}/>
+                    <input
+                        style={{padding: "10px"}}
+                        type="number"
+                        name="startBasenodeId"
+                        placeholder={"시작 ID"}
+                        ref={startBasenodeId}
+                        onClick={() => {
+                            startBasenodeId.current.style.borderColor = "green";
+                            endBasenodeId.current.style.borderColor = "";
+                            inputFillPointer.current = "start";
+                        }}
+                        onTouchStart={() => {
+                            startBasenodeId.current.style.borderColor = "green";
+                            endBasenodeId.current.style.borderColor = "";
+                            inputFillPointer.current = "start";
+                        }}
+                        onKeyPress={(e) => {
+                            if (e.key === "Enter") {
+                                findShortestPath();
+                            }
+                        }}/>
                 </div>
                 <div style={{marginBottom: "10px"}}>
-                    <input style={{padding: "10px"}} type="number" name="endBasenodeId" placeholder={"도착 ID"}
-                           ref={endBasenodeId} onKeyPress={(e) => {
-                        if (e.key === "Enter") {
-                            findShortestPath();
-                        }
-                    }}/>
+                    <input
+                        style={{padding: "10px"}}
+                        type="number"
+                        name="endBasenodeId"
+                        placeholder={"도착 ID"}
+                        ref={endBasenodeId}
+                        onClick={() => {
+                            endBasenodeId.current.style.borderColor = "green";
+                            startBasenodeId.current.style.borderColor = "";
+                            inputFillPointer.current = "end";
+                        }}
+                        onTouchStart={() => {
+                            endBasenodeId.current.style.borderColor = "green";
+                            startBasenodeId.current.style.borderColor = "";
+                            inputFillPointer.current = "end";
+                        }}
+                        onKeyPress={(e) => {
+                            if (e.key === "Enter") {
+                                findShortestPath();
+                            }
+                        }}/>
                 </div>
                 <div>
                     <CustomButton value={"최단 거리 확인하기"} onClick={findShortestPath}/>
                 </div>
                 <div style={{marginTop: "10px"}}>
                     {shortestWeight !== null &&
-                        <span style={{marginLeft: "10px", fontWeight: "bold"}}>{`최소 ${shortestWeight} 걸림`}</span>}
+                    <span style={{marginLeft: "10px", fontWeight: "bold"}}>{`최소 ${shortestWeight} 걸림`}</span>}
                 </div>
             </div>
         </div>
     );
-}
+};
 
 export default RoadMapDetail;
