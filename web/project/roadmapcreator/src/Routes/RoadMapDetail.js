@@ -55,6 +55,8 @@ const DEGREE_PADDING = RADIUS + 10;
 const DEFAULT_COLOR = "#FF6F91";
 const DEGREE_DEFAULT_COLOR = "grey";
 
+const EndStartColor = "#F3C5FF";
+
 const RoadMapDetail = () => {
     const [height, setHeight] = useState(window.innerHeight + RADIUS);
 
@@ -65,6 +67,8 @@ const RoadMapDetail = () => {
 
     const startBasenodeId = useRef(null);
     const endBasenodeId = useRef(null);
+
+    const beforeSelectObject = useRef(null);
 
     // Circle 을 hover 했을 경우
     const onCircleTouchOrOverAction = useMemo(() => {
@@ -101,6 +105,58 @@ const RoadMapDetail = () => {
                     findNextNodePaint("current");
                     document.getElementById(`circle_${id}`).style.fill = baseNodeCoord.current[id]["currentColor"];
                     e.preventDefault();
+                }
+            }
+        }
+    }, [roadMapDegreeDetail]);
+
+    // Circle 을 hover 했을 경우
+    const onCircleClickThenOutAction = useMemo(() => {
+        return (id) => {
+            return {
+                onMouseUp: (e) => {
+                    e.preventDefault();
+                    if (!!!beforeSelectObject.current) {
+                        if (startBasenodeId.current.valueAsNumber !== id) {
+                            endBasenodeId.current.style.borderColor = "green";
+                            startBasenodeId.current.style.borderColor = "";
+                            startBasenodeId.current.value = id;
+                            beforeSelectObject.current = 1;
+                        } else {
+                            startBasenodeId.current.style.borderColor = "red";
+                        }
+                    } else {
+                        if (endBasenodeId.current.valueAsNumber !== id) {
+                            startBasenodeId.current.style.borderColor = "green";
+                            endBasenodeId.current.style.borderColor = "";
+                            endBasenodeId.current.value = id;
+                            beforeSelectObject.current = 0;
+                        } else {
+                            endBasenodeId.current.style.borderColor = "red";
+                        }
+                    }
+                },
+                onTouchEndCapture: (e) => {
+                    e.preventDefault();
+                    if (!!!beforeSelectObject.current) {
+                        if (startBasenodeId.current.valueAsNumber !== id) {
+                            endBasenodeId.current.style.borderColor = "green";
+                            startBasenodeId.current.style.borderColor = "";
+                            startBasenodeId.current.value = id;
+                            beforeSelectObject.current = 1;
+                        } else {
+                            startBasenodeId.current.style.borderColor = "red";
+                        }
+                    } else {
+                        if (endBasenodeId.current.valueAsNumber !== id) {
+                            startBasenodeId.current.style.borderColor = "green";
+                            endBasenodeId.current.style.borderColor = "";
+                            endBasenodeId.current.value = id;
+                            beforeSelectObject.current = 0;
+                        } else {
+                            endBasenodeId.current.style.borderColor = "red";
+                        }
+                    }
                 }
             }
         }
@@ -163,11 +219,11 @@ const RoadMapDetail = () => {
             baseNodeCoord.current[basenode_id]["currentColor"] = "#FFC75F";
         });
 
-        document.querySelector(`#circle_${startBasenodeId.current.value}`).style.fill = "#F3C5FF";
-        baseNodeCoord.current[startBasenodeId.current.value]["currentColor"] = "#F3C5FF";
+        document.querySelector(`#circle_${startBasenodeId.current.value}`).style.fill = EndStartColor;
+        baseNodeCoord.current[startBasenodeId.current.value]["currentColor"] = EndStartColor;
 
-        document.querySelector(`#circle_${endBasenodeId.current.value}`).style.fill = "#F3C5FF";
-        baseNodeCoord.current[endBasenodeId.current.value]["currentColor"] = "#F3C5FF";
+        document.querySelector(`#circle_${endBasenodeId.current.value}`).style.fill = EndStartColor;
+        baseNodeCoord.current[endBasenodeId.current.value]["currentColor"] = EndStartColor;
     }
 
     const setShortestPathPolyLineColor = (data) => {
@@ -484,6 +540,7 @@ const RoadMapDetail = () => {
                                 r={RADIUS}
                                 fill="#00000000"
                                 {...onCircleTouchOrOverAction(val.id)}
+                                {...onCircleClickThenOutAction(val.id)}
                             />
                         </NodeSvg>
                     </NodeTransparentDiv>
